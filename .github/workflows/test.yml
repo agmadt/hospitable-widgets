@@ -1,0 +1,22 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The Worker in dummy mode, widget.js in a simulated browser.
+      - run: npm test
+      # The Worker bundles exactly as the Deploy button will build it.
+      - run: npx wrangler deploy --dry-run --outdir dist
+      # widget/sizes.json (read by the builder) must match the code.
+      - run: npm run size -- --check

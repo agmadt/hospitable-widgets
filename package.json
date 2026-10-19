@@ -1,0 +1,38 @@
+{
+  "name": "hospitable-widgets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Always-current Hospitable listing widgets for any website: one Cloudflare Worker, one snippet.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "size": "node scripts/size.js",
+    "openapi": "node scripts/openapi-schemas.mjs"
+  },
+  "cloudflare": {
+    "bindings": {
+      "HOSPITABLE_PAT": {
+        "description": "Your Hospitable Personal Access Token. Create one in Hospitable under Apps \u2192 API access \u2192 Personal access tokens (read access is enough). Type dummy to try everything on sample data first."
+      },
+      "PUBLIC_GUIDE_TOPICS": {
+        "description": "Optional. Knowledge Hub topic names that may be shown on your website, separated by commas, for example: Local attractions, Restaurants. Leave empty to show none."
+      },
+      "BUILDER_URL": {
+        "description": "Where this Worker's home page sends you after deploy. Leave as it is."
+      },
+      "LISTINGS": {
+        "description": "Stores the last good copy of your listing data. Cloudflare creates it for you."
+      }
+    }
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.6",
+    "terser": "^5.51.2",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.151.1"
+  }
+}

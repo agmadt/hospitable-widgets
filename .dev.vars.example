@@ -1,0 +1,3 @@
+# Your Hospitable Personal Access Token (Read access is enough).
+# Type dummy to run everything on sample data first.
+HOSPITABLE_PAT=dummy

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // The Worker's name becomes part of its address: https://<name>.<you>.workers.dev
+  "name": "hospitable-widgets",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-15",
+  "observability": { "enabled": true },
+
+  // Last good copy of the listing data. Cloudflare creates the namespace on deploy.
+  "kv_namespaces": [{ "binding": "LISTINGS" }],
+
+  // Hourly refresh, at minute 0 (UTC).
+  "triggers": { "crons": ["0 * * * *"] },
+
+  // Serves widget/widget.js at /widget.js for the /demo page. Static files are
+  // free and do not count as Worker requests. Websites load widget.js from jsDelivr.
+  "assets": { "directory": "./widget" },
+
+  "vars": {
+    // Where this Worker's home page sends you after deploy.
+    "BUILDER_URL": "https://hospitable.adhityoagam.com/widgets/",
+    // Knowledge Hub topics that may be shown in public, comma-separated. Empty shows none.
+    "PUBLIC_GUIDE_TOPICS": ""
+  }
+}
