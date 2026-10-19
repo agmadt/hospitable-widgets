@@ -353,10 +353,11 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `widget/modules/*.js` | Loaded on demand: `templates`, `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |
 | `widget/templates/*.html` | The 16 starter templates and their options (a `<!--hw {…} -->` header), plus `_base.css` |
 | `widget/sizes.json` | Download size of each file, written by `npm run size`, checked by CI |
+| `scripts/warm.mjs` | Run by the Release workflow on each tag: warms jsDelivr and purges `@1` |
 
 ### Releasing widget.js
 
-Set the same version in `package.json`, `VERSION` and the header of `widget/widget.js` (a test checks they match), run `npm run size`, and tag `v1.x.y`. Snippets load `@1`, which jsDelivr resolves to the newest 1.x within a few hours; purging `https://purge.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js` speeds that up. Modules then load from `@1.x.y`, so the tag must exist. A breaking change ships as `v2`, and existing snippets keep working.
+Set the same version in `package.json`, `VERSION` and the header of `widget/widget.js` (a test checks they match), run `npm run size`, and push a `v1.x.y` tag. The Release workflow then runs `scripts/warm.mjs`, which requests every file once so jsDelivr has minified and cached it before the first visitor asks, and purges `@1` so snippets move to the new release right away (otherwise jsDelivr takes up to a few hours). Modules and templates load from `@1.x.y`, so the tag must exist. A breaking change ships as `v2`, and existing snippets keep working.
 
 ## License
 
