@@ -18,7 +18,7 @@
 
   "vars": {
     // Where this Worker's home page sends you after deploy.
-    "BUILDER_URL": "https://hospitable.adhityoagam.com/widgets/",
+    "BUILDER_URL": "https://hospitable-widget.adhityoagam.com/",
     // Knowledge Hub topics that may be shown in public, comma-separated. Empty shows none.
     "PUBLIC_GUIDE_TOPICS": ""
   }

@@ -4,7 +4,7 @@ Show always-current listing content from [Hospitable](https://hospitable.com) on
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/agmadt/hospitable-widgets)
 
-Design your widget in the [builder](https://hospitable.adhityoagam.com/widgets/), deploy your own Worker with the button above, and paste one snippet into Wix, Squarespace, WordPress, Webflow or any website. When you change your listing in Hospitable, your website catches up within the hour.
+Design your widget in the [builder](https://hospitable-widget.adhityoagam.com/), deploy your own Worker with the button above, and paste one snippet into Wix, Squarespace, WordPress, Webflow or any website. When you change your listing in Hospitable, your website catches up within the hour.
 
 The Worker runs on Cloudflare's free plan, which covers about 100,000 page views a day. Your Hospitable token lives only in your own Cloudflare account; the builder, the snippet and website visitors never see it. Wi-Fi details, door codes, the house manual, guests' last names and your address are filtered out before anything is stored. If Hospitable is down, your site shows the last good data, and if the Worker is down, it shows a snapshot saved in the snippet.
 
@@ -40,7 +40,7 @@ The Worker runs on Cloudflare's free plan, which covers about 100,000 page views
 
 You paste two things in total: your token into Cloudflare, and one snippet into your website.
 
-1. Open the [builder](https://hospitable.adhityoagam.com/widgets/) and pick a widget, colors, fonts and layout. Your design is saved in your browser.
+1. Open the [builder](https://hospitable-widget.adhityoagam.com/) and pick a widget, colors, fonts and layout. Your design is saved in your browser.
 2. In Hospitable, go to Apps → API access → Access tokens and add a token with Read permission. Tokens last one year, and the API is available on Hospitable's Host plan and up.
 3. Click Deploy to Cloudflare, here or in the builder. Sign in to Cloudflare and GitHub (both accept Google sign-in), paste your token into `HOSPITABLE_PAT` and click Deploy. Cloudflare creates the Worker, its KV storage and the hourly refresh.
 4. In the Cloudflare dashboard, click your Worker's link (`https://hospitable-widgets.<you>.workers.dev`). It sends you back to the builder, already connected.
