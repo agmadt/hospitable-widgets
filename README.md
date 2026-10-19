@@ -1,17 +1,12 @@
 # Hospitable Listing Widgets
 
-Show always-current listing content from [Hospitable](https://hospitable.com) on your own website: photos, amenities, reviews, an availability calendar and more. No code, and no server for you to look after.
+Show always-current listing content from [Hospitable](https://hospitable.com) on your own website: photos, amenities, reviews, an availability calendar and more. You don't write code or look after a server.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/agmadt/hospitable-widgets)
 
-**Design your widget in the [builder](https://hospitable.adhityoagam.com/widgets/)**, deploy your own Worker with the button above, and paste one snippet into Wix, Squarespace, WordPress, Webflow or any website. When you change your listing in Hospitable, your website catches up within the hour.
+Design your widget in the [builder](https://hospitable.adhityoagam.com/widgets/), deploy your own Worker with the button above, and paste one snippet into Wix, Squarespace, WordPress, Webflow or any website. When you change your listing in Hospitable, your website catches up within the hour.
 
-- **Free to run.** The Worker runs on Cloudflare's free plan, which covers about 100,000 page views a day.
-- **Your token stays yours.** Your Hospitable token lives only in your own Cloudflare account. The builder, the snippet and website visitors never see it.
-- **Nothing private leaks.** Wi-Fi details, door codes, the house manual, guest names and your address are filtered out before anything is stored.
-- **Never broken.** If Hospitable is down, your site shows the last good data. If the Worker is down, it shows a snapshot saved in the snippet.
-
----
+The Worker runs on Cloudflare's free plan, which covers about 100,000 page views a day. Your Hospitable token lives only in your own Cloudflare account; the builder, the snippet and website visitors never see it. Wi-Fi details, door codes, the house manual, guests' last names and your address are filtered out before anything is stored. If Hospitable is down, your site shows the last good data, and if the Worker is down, it shows a snapshot saved in the snippet.
 
 - [How it works](#how-it-works)
 - [Setup, step by step](#setup-step-by-step)
@@ -37,22 +32,22 @@ Show always-current listing content from [Hospitable](https://hospitable.com) on
  └──────────────────────┘            └──────────────────────────┘           └──────────────┘
 ```
 
-1. `widget.js` (loaded from jsDelivr, so it costs your Worker nothing) finds each widget on the page. As a widget nears the screen, it asks your Worker for its data in one request, and loads the small modules the widget needs (calendar, reviews, photo viewer, pager) at the same time.
-2. The Worker answers from a 60-second memory cache, then from KV. Only the very first request for a data set calls Hospitable; after that, the hourly cron keeps it fresh.
-3. `widget.js` fills your template and renders it in a shadow root, so your website's CSS and the widget's CSS never clash.
+1. `widget.js` loads from jsDelivr, so it costs your Worker nothing, and finds each widget on the page. As a widget nears the screen, it asks your Worker for its data in one request and loads the small modules the widget needs (calendar, reviews, photo viewer, pager) at the same time.
+2. The Worker answers from a 60-second memory cache, then from KV. Only the first request for a data set calls Hospitable; after that, the hourly cron keeps it fresh.
+3. `widget.js` fills your template and renders it in a shadow root, so your website's CSS and the widget's CSS can't affect each other.
 
 ## Setup, step by step
 
 You paste two things in total: your token into Cloudflare, and one snippet into your website.
 
-1. **Design.** Open the [builder](https://hospitable.adhityoagam.com/widgets/) and pick a widget, colors, fonts and layout. It's saved in your browser.
-2. **Get a token.** In Hospitable, go to **Apps → API access → Access tokens** and add a token with **Read** permission. Tokens last one year. (The API is available on Hospitable's Host plan and up.)
-3. **Deploy.** Click **Deploy to Cloudflare** (here or in the builder). Sign in to Cloudflare and GitHub (both accept Google sign-in), paste your token into `HOSPITABLE_PAT` and click **Deploy**. Cloudflare creates the Worker, its KV storage and the hourly refresh.
-4. **Return.** Click your Worker's link (`https://hospitable-widgets.<you>.workers.dev`) in the Cloudflare dashboard. It sends you back to the builder, already connected.
-5. **Pick a property** and check the preview, now with your real data.
-6. **Copy** the snippet and paste it into an Embed HTML element (Wix: **Add Elements → Embed Code → Embed HTML**). Set the element's height to the one the builder suggests: Wix does not resize embeds by itself.
+1. Open the [builder](https://hospitable.adhityoagam.com/widgets/) and pick a widget, colors, fonts and layout. Your design is saved in your browser.
+2. In Hospitable, go to Apps → API access → Access tokens and add a token with Read permission. Tokens last one year, and the API is available on Hospitable's Host plan and up.
+3. Click Deploy to Cloudflare, here or in the builder. Sign in to Cloudflare and GitHub (both accept Google sign-in), paste your token into `HOSPITABLE_PAT` and click Deploy. Cloudflare creates the Worker, its KV storage and the hourly refresh.
+4. In the Cloudflare dashboard, click your Worker's link (`https://hospitable-widgets.<you>.workers.dev`). It sends you back to the builder, already connected.
+5. Pick a property and check the preview, which now shows your real data.
+6. Copy the snippet and paste it into an Embed HTML element (in Wix: Add Elements → Embed Code → Embed HTML). Wix doesn't resize embeds by itself, so set the element's height to the one the builder suggests.
 
-> **Photos:** Hospitable's API only returns photos that are enabled for the **Direct** channel (Property → Details in Hospitable). If your gallery only shows the cover photo, turn that on.
+> Hospitable's API only returns photos that are enabled for the Direct channel (Property → Details in Hospitable). If your gallery only shows the cover photo, turn that on.
 
 ## The 16 widgets
 
@@ -81,22 +76,17 @@ Bookings stay with Hospitable's own booking widget; a template can link to it.
 
 Set `HOSPITABLE_PAT` to exactly `dummy` and everything runs on the sample data in [`src/fixtures/dummy.json`](src/fixtures/dummy.json): two listed properties and one unlisted, a year of calendar that always starts today, reviews, Knowledge Hub topics and a host profile. Hospitable is never called, the cron does nothing, and every response carries `X-Hosp-Mode: dummy`.
 
-The sample data is shaped exactly like Hospitable's API:
+Open `https://<your-worker>/demo` to see ten widgets working, or load that address in any online iframe tester. The builder connects to a dummy Worker like any other, so you can walk through the whole flow without a Hospitable account.
 
-- Every response follows the response schemas of Hospitable's [OpenAPI spec](https://developer.hospitable.com), copied into [`test/fixtures/hospitable-openapi.json`](test/fixtures/hospitable-openapi.json). A test checks every sample response against them and fails on any field the spec doesn't list, any wrong type and any missing required field.
-- Values come from the spec's own examples wherever they work in a widget: the "Relaxing Villa near the sea" (ID `550e8400-e29b-41d4-a716-446655440000`), its policies, fees and deposits, the Berlin address and Airbnb listing of the second property, the user (Johny Doe & Co), the review "Great place we will be back!" and the "Arrival information" topic. Only photo URLs (the spec's don't load), `"string"` placeholders and dates were replaced.
-- Private fields (Wi-Fi, door codes, street addresses, private feedback, iCal links) hold `SECRET` values, and the tests check that none of them comes out of any endpoint or reaches KV.
+The sample data has the same shape as Hospitable's API:
 
-`npm run openapi` refreshes the copied schemas from Hospitable's published spec.
-
-- Open `https://<your-worker>/demo` to see ten widgets working, or load that address in any online iframe tester.
-- The builder connects to a dummy Worker like any other, so you can walk through the whole flow without a Hospitable account.
-
-The sample data has the exact shape of Hospitable's API, including private fields such as Wi-Fi passwords and door codes, and goes through the same code as real data. The tests check that none of it comes out.
+- Every response follows the response schemas of Hospitable's [OpenAPI spec](https://developer.hospitable.com), copied into [`test/fixtures/hospitable-openapi.json`](test/fixtures/hospitable-openapi.json). A test checks every sample response against them and fails on any field the spec doesn't list, any wrong type and any missing required field. `npm run openapi` refreshes the copy from Hospitable's published spec.
+- Values come from the spec's own examples wherever they work in a widget: the "Relaxing Villa near the sea" (ID `550e8400-e29b-41d4-a716-446655440000`), its policies, fees and deposits, the Berlin address and Airbnb listing of the second property, the user (Johny Doe & Co), the review "Great place we will be back!" and the "Arrival information" topic. Photo URLs (the spec's don't load), `"string"` placeholders and dates are the only replaced values.
+- Private fields (Wi-Fi, door codes, street addresses, private feedback, iCal links) hold `SECRET` values. The data goes through the same code as real data, and the tests check that none of these values comes out of any endpoint or reaches KV.
 
 ## Snippet and template syntax
 
-The builder writes the snippet for you. This is what it contains:
+The builder writes the snippet for you. It contains:
 
 ```html
 <template id="hosp-amenities-x7k2">
@@ -115,7 +105,7 @@ The builder writes the snippet for you. This is what it contains:
 <script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer></script>
 ```
 
-**Template tags**
+### Template tags
 
 | Tag | Does |
 | --- | --- |
@@ -127,9 +117,11 @@ The builder writes the snippet for you. This is what it contains:
 | `{#list.0}…{/list.0}` | Shows once when a list has items (a heading above a list, say). |
 | `<!--{#rows}-->` | A tag may sit in an HTML comment. Use this between table rows, where the browser would otherwise move the text out of the table. |
 
-`data-hosp-data` and `data-hosp-modules` say what the widget needs, so `widget.js` fetches exactly that: a page with only an Amenities widget never downloads a year of calendar, nor the calendar code. The builder writes both. Leave them out of a hand-written snippet and `widget.js` loads `modules/analyze.js` to work them out from the fields the template uses.
+`data-hosp-data` and `data-hosp-modules` say what the widget needs, and `widget.js` fetches exactly that: a page with only an Amenities widget never downloads a year of calendar or the calendar code. The builder writes both attributes. If a hand-written snippet leaves them out, `widget.js` loads `modules/analyze.js` to work them out from the fields the template uses.
 
-**Display choices** go on the `<div>` as attributes. The data behind them is public anyway, and `widget.js` applies them in the browser:
+### Display choices
+
+Display choices go on the `<div>` as attributes. The data behind them is public anyway, and `widget.js` applies them in the browser:
 
 | Attribute | Effect |
 | --- | --- |
@@ -148,12 +140,16 @@ The builder writes the snippet for you. This is what it contains:
 | `data-hosp-modules="reviews,pager"` | Modules to load: `calendar`, `reviews`, `lightbox`, `pager`. |
 | `data-hosp-eager` | Load right away instead of when the widget nears the screen. |
 
-**Behaviors** a template can switch on with attributes:
+### Behaviors
 
-- `data-hosp-lightbox` on a container: its images open a full-screen viewer (arrow keys, swipe, Esc). `data-hosp-open="0"` on a button opens it at a given photo.
-- `data-hosp-pager` on a container of `data-hosp-page` children, with `data-hosp-prev`, `data-hosp-next` and an optional `data-hosp-page-label`. `data-hosp-per-view="auto"` shows as many pages side by side as fit (minimum width from `data-hosp-min-width`, default 280); the count is in the CSS variable `--hosp-per-view`.
+A template can switch on two behaviors with attributes:
 
-**What a page downloads.** Formatting is built into `widget.js`; everything else is a module next to it, loaded only when a widget on the page uses it. As jsDelivr serves them (minified, compressed):
+- `data-hosp-lightbox` on a container makes its images open a full-screen viewer (arrow keys, swipe, Esc). `data-hosp-open="0"` on a button opens it at a given photo.
+- `data-hosp-pager` goes on a container of `data-hosp-page` children, with `data-hosp-prev`, `data-hosp-next` and an optional `data-hosp-page-label`. `data-hosp-per-view="auto"` shows as many pages side by side as fit (minimum width from `data-hosp-min-width`, default 280), and puts the count in the CSS variable `--hosp-per-view`.
+
+### What a page downloads
+
+Formatting is built into `widget.js`. Everything else is a module next to it, loaded only when a widget on the page uses it. Sizes as jsDelivr serves them, minified and compressed:
 
 | Widget | JavaScript |
 | --- | --- |
@@ -162,11 +158,15 @@ The builder writes the snippet for you. This is what it contains:
 | Availability calendar | 7.3 KB: + `calendar`, `pager` |
 | Reviews carousel | 7.0 KB: + `reviews`, `pager` |
 
-`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules load from the same folder and the exact same version as `widget.js` (`@1` becomes `@1.0.0`), so a cached `widget.js` never meets newer modules. Widgets mount as they near the screen (400 px ahead), so a widget nobody scrolls to costs no Worker request; widgets that show the same property share one request.
+`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules load from the same folder and the exact same version as `widget.js` (`@1` becomes `@1.0.0`), so a cached `widget.js` never meets newer modules. Widgets mount as they come within 400 px of the screen, so a widget nobody scrolls to costs no Worker request, and widgets that show the same property share one request.
 
-**Events and API.** Each render fires a `hosp:render` event on the element (`detail.state` is `live` or `snapshot`). `window.HospWidgets` offers `render`, `renderTo`, `derive`, `fetchData`, `need`, `scan`, and, once `need(['analyze'])` has loaded, `analyze` and `plan`, for builders and tests.
+### Events and API
 
-**Writing a module.** A module is a plain script that registers itself:
+Each render fires a `hosp:render` event on the element (`detail.state` is `live` or `snapshot`). For builders and tests, `window.HospWidgets` has `render`, `renderTo`, `derive`, `fetchData`, `need` and `scan`, plus `analyze` and `plan` once `need(['analyze'])` has loaded.
+
+### Writing a module
+
+A module is a plain script that registers itself:
 
 ```js
 HospWidgets.define('mymodule', ['calendar'], function (api) {
@@ -179,7 +179,7 @@ HospWidgets.define('mymodule', ['calendar'], function (api) {
 
 ## Widget data reference
 
-Field names are snake case. A template can use any field of the data sets it touches; `widget.js` also adds the *formatted* fields listed after each table, in the visitor's language.
+Field names are snake case. A template can use any field of the data sets it touches. `widget.js` also adds the formatted fields listed after each table, in the visitor's language.
 
 ### `GET /api/properties/:id`: property
 
@@ -214,7 +214,7 @@ Added by `widget.js`: `location`, `guests_label`, `bedrooms_label` (`Studio` for
 | `currency` | string | |
 | `calendar` | `{date, available, price, min_stay}[]` | 12 months from today; `price` only on open nights |
 
-Added by `widget.js`: `price_from`, `price_from_formatted`, `min_stay`, `min_stay_label`, `next_available`, `available_nights`, and `months`: `{label, month, year, weekdays: {label}[], weeks: {days: {day, date, label, state, available, booked, past, today, unknown, blank, price, price_formatted, min_stay}[]}[]}[]`. `state` is `available`, `booked`, `past`, `unknown` or `blank`, handy as a class name.
+Added by `widget.js`: `price_from`, `price_from_formatted`, `min_stay`, `min_stay_label`, `next_available`, `available_nights`, and `months`: `{label, month, year, weekdays: {label}[], weeks: {days: {day, date, label, state, available, booked, past, today, unknown, blank, price, price_formatted, min_stay}[]}[]}[]`. `state` is `available`, `booked`, `past`, `unknown` or `blank`, which works as a class name.
 
 ### `GET /api/properties/:id/reviews`
 
@@ -240,11 +240,11 @@ Added by `widget.js`: per review `stars` (`★★★★☆`), `date_formatted`, 
 
 Every response also has `mode` (`live` or `dummy`) and `updated_at`. Unknown and unlisted properties return 404.
 
-`GET /api/properties/:id?include=calendar,reviews,guide,host` returns the property merged with those data sets in one response; this is what `widget.js` asks for, so each widget costs one request. `updated_at` is then the oldest of them.
+`GET /api/properties/:id?include=calendar,reviews,guide,host` returns the property merged with those data sets in one response. `widget.js` asks for this, so each widget costs one request, and `updated_at` is the oldest of the merged sets.
 
 ## Privacy
 
-The Worker's endpoints are public: anyone who knows the address can read them. So the Worker builds every response from an allowlist, and these are **never** stored or served, whatever a template asks for:
+The Worker's endpoints are public: anyone who knows the address can read them. The Worker therefore builds every response from an allowlist, and never stores or serves the following, whatever a template asks for:
 
 - street address, postcode and coordinates
 - Wi-Fi name and password, guest access and check-in instructions, the house manual, "other details"
@@ -253,11 +253,11 @@ The Worker's endpoints are public: anyone who knows the address can read them. S
 - your email, billing address and tax details, listing emails, internal property names and tags
 - anything from reservations, guests, messages, transactions or payouts (the Worker never calls those endpoints)
 
-**Knowledge Hub** topics often hold door codes, so the Worker serves none of them until you list the safe ones in `PUBLIC_GUIDE_TOPICS`.
+Knowledge Hub topics often hold door codes, so the Worker serves none of them until you list the safe ones in `PUBLIC_GUIDE_TOPICS`.
 
 ## Settings
 
-Set these on the deploy page, or later in Cloudflare under **Workers & Pages → your Worker → Settings → Variables and Secrets**.
+Set these on the deploy page, or later in Cloudflare under Workers & Pages → your Worker → Settings → Variables and Secrets.
 
 | Name | Kind | Default | Meaning |
 | --- | --- | --- | --- |
@@ -269,7 +269,7 @@ Set these on the deploy page, or later in Cloudflare under **Workers & Pages →
 
 ## Limits and what happens when something fails
 
-On the free plan, one page view costs one Worker request per widget at most (`widget.js` and its modules come from jsDelivr and don't count).
+On the free plan, one page view costs at most one Worker request per widget. `widget.js` and its modules come from jsDelivr and don't count.
 
 | Free plan limit | Value | What this kit uses |
 | --- | --- | --- |
@@ -279,18 +279,18 @@ On the free plan, one page view costs one Worker request per widget at most (`wi
 | Subrequests | 50 per run | 1 list call, plus up to 4 calls per property (photos, calendar, reviews, guide) |
 | Cron triggers | 5 per account | 1 |
 
-With every widget type in use, about 10 properties fit in one hourly run. Beyond that the cron works through your properties in rotating batches, so each still refreshes several times a day; the builder tells you when this is happening. For 40 or more properties, the Workers Paid plan ($5/month) lifts the limits (set `SUBREQUEST_BUDGET` to `900`).
+With every widget type in use, about 10 properties fit in one hourly run. Beyond that, the cron works through your properties in rotating batches, so each one still refreshes several times a day, and the builder tells you when this is happening. For 40 or more properties, the Workers Paid plan ($5/month) lifts the limits (set `SUBREQUEST_BUDGET` to `900`).
 
-| When… | Then… |
+| Situation | What happens |
 | --- | --- |
 | Hospitable is down or rejects the token | The Worker keeps serving the last good data from KV and logs the error. |
 | The token expires (after a year) | Same, and the builder shows how to paste a new one. |
-| The Worker is unreachable, or the daily limit is hit (error 1027) | `widget.js` renders the snapshot saved in the snippet. Visitors never see a broken widget. |
+| The Worker is unreachable, or the daily limit is hit (error 1027) | `widget.js` renders the snapshot saved in the snippet. |
 | A property is unlisted | Its data is deleted on the next run and its endpoints return 404. |
 
 ## Updating your Worker
 
-The Deploy button copies this repository into your GitHub account, and Cloudflare redeploys whenever that copy changes. Most improvements ship in `widget.js` through jsDelivr, so your website gets them without you doing anything. To pull in Worker fixes too:
+The Deploy button copies this repository into your GitHub account, and Cloudflare redeploys whenever that copy changes. Most improvements ship in `widget.js` through jsDelivr and reach your website without you doing anything. To pull in Worker fixes too:
 
 ```sh
 git clone https://github.com/<you>/hospitable-widgets && cd hospitable-widgets
@@ -316,7 +316,7 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `src/listings.js` | Reading (memory → KV → Hospitable) and the hourly refresh |
 | `src/hospitable.js` | Read-only Hospitable API client with a subrequest budget |
 | `src/normalize.js` | API responses → public widget data (the allowlist) |
-| `src/amenities.js` | Amenity labels and groups |
+| `src/amenities.js` | Readable labels for amenity codes |
 | `src/dummy.js`, `src/fixtures/dummy.json` | Dummy mode |
 | `src/demo.js` | The `/demo` page |
 | `src/store.js` | Memory cache, change detection, in-memory KV |
@@ -324,7 +324,9 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `widget/modules/*.js` | Loaded on demand: `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |
 | `widget/sizes.json` | Download size of each file, written by `npm run size`, checked by CI |
 
-**Releasing `widget.js`:** set the same version in `package.json`, `VERSION` and the header of `widget/widget.js` (a test checks they match), run `npm run size`, and tag `v1.x.y`. Snippets load `@1`, which jsDelivr resolves to the newest 1.x within a few hours (purge `https://purge.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js` to speed that up); modules then load from `@1.x.y`, which is why the tag must exist. A breaking change ships as `v2`, so existing snippets keep working.
+### Releasing widget.js
+
+Set the same version in `package.json`, `VERSION` and the header of `widget/widget.js` (a test checks they match), run `npm run size`, and tag `v1.x.y`. Snippets load `@1`, which jsDelivr resolves to the newest 1.x within a few hours; purging `https://purge.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js` speeds that up. Modules then load from `@1.x.y`, so the tag must exist. A breaking change ships as `v2`, and existing snippets keep working.
 
 ## License
 
