@@ -18,9 +18,6 @@
       "HOSPITABLE_PAT": {
         "description": "Your Hospitable Personal Access Token. Create one in Hospitable under Apps \u2192 API access \u2192 Personal access tokens (read access is enough). Type dummy to try everything on sample data first."
       },
-      "PUBLIC_GUIDE_TOPICS": {
-        "description": "Optional. Knowledge Hub topic names that may be shown on your website, separated by commas, for example: Local attractions, Restaurants. Leave empty to show none."
-      },
       "BUILDER_URL": {
         "description": "Where this Worker's home page sends you after deploy. Leave as it is."
       },

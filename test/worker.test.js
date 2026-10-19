@@ -291,9 +291,9 @@ describe('live mode', () => {
     for (const word of PRIVATE) expect(stored, `KV holds "${word}"`).not.toContain(word);
   });
 
-  it('serves no guide content until the host lists public topics', async () => {
+  it.each([[''], ['   '], [undefined]])('serves no guide content while PUBLIC_GUIDE_TOPICS is %j', async (topics) => {
     const { calls } = hospitable();
-    const env = liveEnv({ PUBLIC_GUIDE_TOPICS: '' });
+    const env = liveEnv({ PUBLIC_GUIDE_TOPICS: topics });
     const { body } = await json(`/api/properties/${VILLA}/guide`, env);
     expect(body.guide).toEqual([]);
     expect(calls).not.toContain(`/properties/${VILLA}/knowledge-hub`);

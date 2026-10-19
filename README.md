@@ -253,16 +253,16 @@ The Worker's endpoints are public: anyone who knows the address can read them. T
 - your email, billing address and tax details, listing emails, internal property names and tags
 - anything from reservations, guests, messages, transactions or payouts (the Worker never calls those endpoints)
 
-Knowledge Hub topics often hold door codes, so the Worker serves none of them until you list the safe ones in `PUBLIC_GUIDE_TOPICS`.
+Knowledge Hub topics often hold door codes, so the Worker serves none of them until you list the safe ones in `PUBLIC_GUIDE_TOPICS`. Add that variable in Cloudflare after deploying (see Settings); the deploy page doesn't ask for it.
 
 ## Settings
 
-Set these on the deploy page, or later in Cloudflare under Workers & Pages → your Worker → Settings → Variables and Secrets.
+The deploy page asks for `HOSPITABLE_PAT`. Change it, or add the optional variables, later in Cloudflare under Workers & Pages → your Worker → Settings → Variables and Secrets. Variables added there survive redeploys (`keep_vars` in `wrangler.jsonc`).
 
 | Name | Kind | Default | Meaning |
 | --- | --- | --- | --- |
 | `HOSPITABLE_PAT` | secret | | Your token (Read permission), or `dummy` |
-| `PUBLIC_GUIDE_TOPICS` | variable | empty | Knowledge Hub topic names allowed in public, comma-separated |
+| `PUBLIC_GUIDE_TOPICS` | variable | not set | Knowledge Hub topic names allowed in public, comma-separated, for example `Local attractions, Where to eat`. Not set (or blank) shows none. |
 | `BUILDER_URL` | variable | the builder | Where the Worker's home page sends you |
 | `SUBREQUEST_BUDGET` | variable | `45` | Hospitable calls per run; raise to `900` on the Workers Paid plan |
 | `WIDGET_URL` | variable | `/widget.js` | `widget.js` used by `/demo` |

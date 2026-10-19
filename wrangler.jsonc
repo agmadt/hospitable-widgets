@@ -18,8 +18,11 @@
 
   "vars": {
     // Where this Worker's home page sends you after deploy.
-    "BUILDER_URL": "https://hospitable-widget.adhityoagam.com/",
-    // Knowledge Hub topics that may be shown in public, comma-separated. Empty shows none.
-    "PUBLIC_GUIDE_TOPICS": ""
-  }
+    "BUILDER_URL": "https://hospitable-widget.adhityoagam.com/"
+  },
+
+  // Variables added in the Cloudflare dashboard survive redeploys. That is
+  // where PUBLIC_GUIDE_TOPICS goes: it is optional, and the deploy page would
+  // insist on a value if it were listed above.
+  "keep_vars": true
 }
