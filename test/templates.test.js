@@ -120,12 +120,12 @@ describe('one-line snippets', () => {
   });
 
   it('works out what a snippet needs when it does not say', async () => {
-    const calls = stubFetch({ '/api/properties/p1?include=reviews': { ...property, reviews: [{ id: 'a', rating: 5, text: 'Lovely', date: '2026-01-01', guest_name: 'Ana' }], rating_average: 5, review_count: 1 } });
+    const calls = stubFetch({ '/api/properties/p1?include=calendar,guide,host,reviews': { ...property, reviews: [{ id: 'a', rating: 5, text: 'Lovely', date: '2026-01-01', guest_name: 'Ana' }], rating_average: 5, review_count: 1 } });
     const el = widget('data-hosp="rating-summary"');
     await W.scan();
     expect(el.getAttribute('data-hosp-state')).toBe('live');
     expect(el.shadowRoot.textContent).toContain('1 review');
-    expect(calls).toContain('https://w.example.workers.dev/api/properties/p1?include=reviews');
+    expect(calls).toContain('https://w.example.workers.dev/api/properties/p1?include=calendar,guide,host,reviews');
   });
 
   it("shows the visitor's last copy when the Worker can't be reached", async () => {

@@ -7,6 +7,7 @@ let W;
 beforeEach(async () => {
   document.head.innerHTML = '';
   document.body.innerHTML = '';
+  localStorage.clear();
   W = await loadWidget();
 });
 
@@ -198,7 +199,7 @@ describe('rendering into the page', () => {
     return calls;
   }
 
-  it('makes one request per widget, shared by identical widgets, and renders in a shadow root', async () => {
+  it('makes one request per property, shared by its widgets, and renders in a shadow root', async () => {
     const calls = stubFetch({
       '/api/properties/p1': { property_name: 'Relaxing Villa near the sea', amenities: ['Wi-Fi'], reviews: [], rating_average: 4.8, review_count: 9 },
     });
@@ -209,7 +210,32 @@ describe('rendering into the page', () => {
     expect(el.shadowRoot.querySelector('p').textContent).toBe('4.8');
     expect(document.getElementById('w2').shadowRoot.querySelector('h3').textContent).toBe('Relaxing Villa near the sea');
     expect(el.getAttribute('data-hosp-state')).toBe('live');
-    expect(calls).toEqual(['https://w.example.workers.dev/api/properties/p1?include=reviews']);
+    expect(calls).toEqual(['https://w.example.workers.dev/api/properties/p1?include=calendar,guide,host,reviews']);
+  });
+
+  it('asks for the same URL whatever a widget needs', async () => {
+    const calls = stubFetch({ '/api/properties/p1': { property_name: 'Villa', reviews: [], calendar: [], host_name: 'Rina' } });
+    document.body.innerHTML = '<template id="a">{property_name}</template><template id="b">{#reviews}{text}{/reviews}</template><template id="c">{host_name}</template>' +
+      ['a" data-hosp-data="property', 'b" data-hosp-data="property,reviews', 'c" data-hosp-data="host']
+        .map((t) => `<div data-hosp-template="${t}" data-hosp-modules="" data-hosp-worker="https://w.example.workers.dev" data-hosp-property="p1"></div>`).join('');
+    await W.scan();
+    expect(calls).toEqual(['https://w.example.workers.dev/api/properties/p1?include=calendar,guide,host,reviews']);
+    // Without a property, a host-only widget asks for the host alone.
+    expect(await W.fetchData('https://w.example.workers.dev', null, ['host']).catch(() => null)).toBeNull();
+    expect(calls.at(-1)).toBe('https://w.example.workers.dev/api/host');
+  });
+
+  it("falls back for a widget whose data set the Worker couldn't load, and keeps the others live", async () => {
+    stubFetch({ '/api/properties/p1': { property_name: 'Villa', missing: ['calendar'] } });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    document.body.innerHTML = '<template id="a">{property_name}</template><template id="b">{#calendar}x{/calendar}</template>' +
+      '<div id="wa" data-hosp-template="a" data-hosp-data="property" data-hosp-modules="" data-hosp-worker="https://w.example.workers.dev" data-hosp-property="p1"></div>' +
+      '<div id="wb" data-hosp-template="b" data-hosp-data="property,calendar" data-hosp-modules="" data-hosp-worker="https://w.example.workers.dev" data-hosp-property="p1"></div>';
+    await W.scan();
+    expect(document.getElementById('wa').getAttribute('data-hosp-state')).toBe('live');
+    expect(document.getElementById('wb').getAttribute('data-hosp-state')).toBe('unavailable');
+    // An incomplete answer is not kept as the visitor's copy.
+    expect(Object.keys(localStorage).filter((k) => k.startsWith('hosp:'))).toEqual([]);
   });
 
   it('renders the fallback snapshot when the Worker is unreachable', async () => {
@@ -381,7 +407,7 @@ describe('modules', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(serveModuleScripts()).toEqual(['http://localhost:3000/modules/reviews.js']);
     await done;
-    expect(fetch).toHaveBeenCalledWith('https://w.example.workers.dev/api/properties/p1?include=reviews', expect.anything());
+    expect(fetch).toHaveBeenCalledWith('https://w.example.workers.dev/api/properties/p1?include=calendar,guide,host,reviews', expect.anything());
     expect(document.getElementById('w').shadowRoot.querySelector('p').textContent).toBe('1 review★★★★★');
   });
 

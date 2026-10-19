@@ -234,6 +234,19 @@ describe('live mode', () => {
     expect(calls).toHaveLength(2);
   });
 
+  it('answers with the data sets it has when one of them fails, and keeps that answer out of caches', async () => {
+    const h = hospitable();
+    const env = liveEnv();
+    await get(`/api/properties/${VILLA}`, env);
+    h.state.fail = 'network';
+    const { res, body } = await json(`/api/properties/${VILLA}?include=calendar,guide,host,reviews`, env);
+    expect(res.status).toBe(200);
+    expect(body.property_name).toBe('Relaxing Villa near the sea');
+    expect(body.missing).toEqual(['calendar', 'guide', 'host', 'reviews']);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(JSON.stringify(body)).not.toContain(PAT);
+  });
+
   it('does not call Hospitable for property IDs it does not know', async () => {
     const { calls } = hospitable();
     const env = liveEnv();

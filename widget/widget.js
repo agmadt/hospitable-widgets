@@ -1,4 +1,4 @@
-/*! Hospitable Listing Widgets v1.1.0 | MIT | github.com/agmadt/hospitable-widgets */
+/*! Hospitable Listing Widgets v1.1.1 | MIT | github.com/agmadt/hospitable-widgets */
 // The core: finds each widget (data-hosp or data-hosp-template), fetches its data from
 // the host's Worker (one request per widget), fills the template and renders
 // it into a shadow root. Formatting is built in; calendar, reviews, the photo
@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.1.1';
 
   if (window.HospWidgets && window.HospWidgets.version) {
     // Loaded twice (two snippets on one page): reuse the first copy.
@@ -439,9 +439,12 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Data: one request per widget. The property endpoint folds in the other
-  // data sets with ?include=, so the Worker counts one request per page view.
+  // Data. Every widget of a property asks for the same URL, which folds in all
+  // its data sets: widgets on a page share one request, and the browser's
+  // cache (one hour) serves it to the site's other pages and embeds.
   // ---------------------------------------------------------------------------
+
+  var EVERYTHING = 'calendar,guide,host,reviews';
 
   var requests = Object.create(null);
 
@@ -472,23 +475,30 @@
     return url;
   }
 
-  function fetchData(worker, propertyId, datasets) {
-    var base;
-    try {
-      base = workerBase(worker);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  /** The Worker URLs that hold a widget's data sets. Throws on a bad snippet. */
+  function dataUrls(worker, propertyId, datasets) {
+    var base = workerBase(worker);
     var sets = datasets && datasets.length ? datasets : ['property'];
     var urls = [];
-    if (sets.indexOf('property') !== -1) {
-      if (!propertyId) return Promise.reject(new Error('data-hosp-property is missing'));
-      var extra = sets.filter(function (s) { return s !== 'property' && s !== 'properties'; }).sort();
-      urls.push(base + '/api/properties/' + encodeURIComponent(propertyId) + (extra.length ? '?include=' + extra.join(',') : ''));
+    var perProperty = sets.some(function (s) { return s !== 'host' && s !== 'properties'; });
+    if (perProperty && !propertyId) throw new Error('data-hosp-property is missing');
+    // A host-only widget that names a property shares that property's request.
+    if (perProperty || (propertyId && sets.indexOf('host') !== -1)) {
+      urls.push(base + '/api/properties/' + encodeURIComponent(propertyId) + '?include=' + EVERYTHING);
     } else if (sets.indexOf('host') !== -1) {
       urls.push(base + '/api/host');
     }
     if (sets.indexOf('properties') !== -1) urls.push(base + '/api/properties');
+    return urls;
+  }
+
+  function fetchData(worker, propertyId, datasets) {
+    var urls;
+    try {
+      urls = dataUrls(worker, propertyId, datasets);
+    } catch (e) {
+      return Promise.reject(e);
+    }
     return Promise.all(urls.map(fetchJSON)).then(function (parts) {
       var merged = {};
       parts.forEach(function (part) {
@@ -499,6 +509,10 @@
         if (part.updated_at && (!merged.updated_at || part.updated_at < merged.updated_at)) merged.updated_at = part.updated_at;
         if (part.mode === 'dummy') merged.sample_data = true;
       });
+      // The Worker lists the sets it couldn't load. A widget that needs one
+      // of them falls back to the visitor's last copy instead.
+      var lost = (merged.missing || []).filter(function (s) { return (datasets || []).indexOf(s) !== -1; });
+      if (lost.length) throw new Error('the Worker could not load ' + lost.join(', '));
       return merged;
     });
   }
@@ -603,9 +617,20 @@
 
   // The last data each widget showed is kept in the visitor's browser, so a
   // returning visitor still sees the widget while the Worker can't be reached.
-  var CACHE = 'hosp:v1:';
+  var CACHE = 'hosp:v2:';
+  var stored = Object.create(null);
+
+  // v1 kept a copy per widget; v2 keeps one per property. Clear the old ones.
+  try {
+    for (var n = localStorage.length - 1; n >= 0; n--) {
+      if ((localStorage.key(n) || '').indexOf('hosp:v1:') === 0) localStorage.removeItem(localStorage.key(n));
+    }
+  } catch (e) { /* storage blocked */ }
 
   function remember(key, data) {
+    // Widgets of one property share a key; a partial answer must not replace a full copy.
+    if (stored[key] || data.missing) return;
+    stored[key] = true;
     try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), data: data })); } catch (e) { /* storage full or blocked */ }
   }
 
@@ -642,7 +667,7 @@
     var code = Promise.all([template, needs.then(function (n) { return need(n.modules); }).catch(function (err) { warn(err.message); })])
       .then(function (r) { return r[0]; });
     var data = needs.then(function (n) {
-      key = CACHE + worker + '|' + (property || '') + '|' + n.datasets.slice().sort().join(',');
+      try { key = CACHE + dataUrls(worker, property, n.datasets).join(' '); } catch (e) { /* fetchData reports it */ }
       return fetchData(worker, property, n.datasets);
     });
 

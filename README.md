@@ -32,7 +32,7 @@ The Worker runs on Cloudflare's free plan, which covers about 100,000 page views
  └──────────────────────┘            └──────────────────────────┘           └──────────────┘
 ```
 
-1. `widget.js` loads from jsDelivr, so it costs your Worker nothing, and finds each widget on the page. As a widget nears the screen, it asks your Worker for its data in one request and, at the same time, loads the widget's template and the small modules it needs (calendar, reviews, photo viewer, pager) from jsDelivr.
+1. `widget.js` loads from jsDelivr, so it costs your Worker nothing, and finds each widget on the page. As a widget nears the screen, it asks your Worker for its property's data (one request, shared by every widget of that property) and, at the same time, loads the widget's template and the small modules it needs (calendar, reviews, photo viewer, pager) from jsDelivr.
 2. The Worker answers from a 60-second memory cache, then from KV. Only the first request for a data set calls Hospitable; after that, the hourly cron keeps it fresh.
 3. `widget.js` fills your template and renders it in a shadow root, so your website's CSS and the widget's CSS can't affect each other.
 
@@ -48,6 +48,21 @@ You paste two things in total: your token into Cloudflare, and one snippet into 
 6. Copy the snippet and paste it into an Embed HTML element (in Wix: Add Elements → Embed Code → Embed HTML). Wix doesn't resize embeds by itself, so set the element's height to the one the builder suggests.
 
 > Hospitable's API only returns photos that are enabled for the Direct channel (Property → Details in Hospitable). If your gallery only shows the cover photo, turn that on.
+
+## Several widgets on one site
+
+Design each widget in the builder and copy its snippet. Where they go depends on how your website builder runs HTML:
+
+- **On the page itself** (WordPress Custom HTML, Squarespace Code blocks, Webflow Code Embeds, your own HTML): put each `<div>` where it should appear. The `<script>` is needed once per page; pasting it again does no harm, because `widget.js` notices it is already running and only picks up the new widgets.
+- **In a frame** (Wix Embed HTML): every embed is a separate small page that can't see the others, so each embed needs its whole snippet, `<div>` and `<script>`. Widgets that sit one under the other can share one embed: paste their `<div>`s together and the `<script>` once.
+
+Every widget of a property asks the Worker for the same URL, which holds all of that property's data: `/api/properties/:id?include=calendar,guide,host,reviews`. So:
+
+- One page with any number of widgets of a property makes one request for it.
+- The visitor's browser keeps the answer for an hour, so the site's other pages, and the other Wix embeds, can use it without asking the Worker again.
+- The cost: a page with only a Description widget also downloads the property's calendar, reviews, guide and host. With the sample data that is about 4.5 KB compressed instead of 2 KB, and more for a listing with hundreds of reviews. Fewer Worker requests are worth more than those few kilobytes.
+
+The Property list widget reads a different endpoint (`/api/properties`), so it adds one request of its own.
 
 ## The 16 widgets
 
@@ -165,12 +180,12 @@ Formatting is built into `widget.js`. Starter templates come through the `templa
 
 | Widget | JavaScript |
 | --- | --- |
-| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 8.1 KB: `widget.js` + `templates` |
-| Photo gallery | 10.7 KB: + `lightbox` (viewer with filmstrip) |
-| Availability calendar | 10.1 KB: + `calendar`, `pager` |
-| Reviews carousel | 9.8 KB: + `reviews`, `pager` |
+| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 8.2 KB: `widget.js` + `templates` |
+| Photo gallery | 10.8 KB: + `lightbox` (viewer with filmstrip) |
+| Availability calendar | 10.2 KB: + `calendar`, `pager` |
+| Reviews carousel | 9.9 KB: + `reviews`, `pager` |
 
-`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules and templates load from the same folder and the exact same version as `widget.js` (`@1` becomes `@1.1.0`), so a cached `widget.js` never meets newer ones. Widgets mount as they come within 400 px of the screen, so a widget nobody scrolls to costs no Worker request, and widgets that show the same property share one request.
+`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules and templates load from the same folder and the exact same version as `widget.js` (`@1` becomes, say, `@1.1.1`), so a cached `widget.js` never meets newer ones. Widgets mount as they come within 400 px of the screen, so a page whose widgets nobody scrolls to costs no Worker request, and widgets of the same property share one request (see [Several widgets on one site](#several-widgets-on-one-site)).
 
 ### Events and API
 
@@ -269,7 +284,7 @@ Added by `widget.js`: per review `stars` (`★★★★☆`), `date_formatted`, 
 
 Every response also has `mode` (`live` or `dummy`) and `updated_at`. Unknown and unlisted properties return 404.
 
-`GET /api/properties/:id?include=calendar,reviews,guide,host` returns the property merged with those data sets in one response. `widget.js` asks for this, so each widget costs one request, and `updated_at` is the oldest of the merged sets.
+`GET /api/properties/:id?include=calendar,reviews,guide,host` returns the property merged with those data sets in one response, and `updated_at` is the oldest of the merged sets. `widget.js` always asks for all four, so every widget of a property uses the same URL. If one set can't be loaded, the response still has the others, lists the failed ones in `missing` (for example `["reviews"]`) and isn't cached; `widget.js` shows the widgets that need a missing set from the visitor's last copy.
 
 ## Privacy
 
@@ -302,8 +317,8 @@ On the free plan, one page view costs at most one Worker request per widget, and
 
 | Free plan limit | Value | What this kit uses |
 | --- | --- | --- |
-| Worker requests | 100,000 / day | One per widget per visitor per hour, only once it nears the screen; widgets showing the same property share it |
-| KV reads | 100,000 / day | Fewer than requests, thanks to the 60-second memory cache |
+| Worker requests | 100,000 / day | One per property per visitor per hour, once a widget nears the screen; all widgets of that property share it, across pages |
+| KV reads | 100,000 / day | Up to 7 per request when the 60-second memory cache is cold; under steady traffic most requests read none |
 | KV writes | 1,000 / day | Only when data actually changed, plus one status write per hour |
 | Subrequests | 50 per run | 1 list call, plus up to 4 calls per property (photos, calendar, reviews, guide) |
 | Cron triggers | 5 per account | 1 |
@@ -313,6 +328,7 @@ With every widget type in use, about 10 properties fit in one hourly run. Beyond
 | Situation | What happens |
 | --- | --- |
 | Hospitable is down or rejects the token | The Worker keeps serving the last good data from KV and logs the error. |
+| One data set has never loaded (say, reviews) | The property's other widgets show as usual; the Reviews widget shows the visitor's last copy, or a short message. |
 | The token expires (after a year) | Same, and the builder shows how to paste a new one. |
 | The Worker is unreachable, or the daily limit is hit (error 1027) | Returning visitors see their browser's last copy; first-time visitors see a short message. Requests work again after the limit resets at 00:00 UTC. |
 | A property is unlisted | Its data is deleted on the next run and its endpoints return 404. |

@@ -61,13 +61,30 @@ async function api(route, id, url, env, listings) {
       return data({ updated_at: list.updated_at, status, properties: list.properties }, env, fresh);
     }
     case 'property': {
-      // ?include=calendar,reviews,guide,host folds the other data sets a widget
-      // needs into this one response: one Worker request per widget per page view.
+      // ?include=calendar,reviews,guide,host folds the other data sets into this
+      // response. widget.js asks for all of them, so every widget of a property
+      // shares one URL: one request per page view, one copy in the browser's cache.
       const include = (url.searchParams.get('include') || '').split(',').map((s) => s.trim()).filter((s) => INCLUDES.has(s));
-      const parts = await Promise.all([listings.property(id), ...include.map((set) => (set === 'host' ? listings.host() : listings[set](id)))]);
+      const [property, settled] = await Promise.all([
+        listings.property(id),
+        Promise.allSettled(include.map((set) => (set === 'host' ? listings.host() : listings[set](id)))),
+      ]);
+      // A set that fails doesn't take the others down with it; widget.js shows
+      // the widgets that need it from the visitor's last copy.
+      const parts = [property];
+      const missing = [];
+      settled.forEach((r, i) => {
+        if (r.status === 'fulfilled') parts.push(r.value);
+        else {
+          missing.push(include[i]);
+          console.error(`[hospitable-widgets] could not load ${include[i]} for ${id}`, r.reason);
+        }
+      });
       const merged = Object.assign({}, ...parts);
       merged.updated_at = parts.map((p) => p.updated_at).filter(Boolean).sort()[0] || null;
-      return data(merged, env, fresh);
+      if (missing.length) merged.missing = missing;
+      // An incomplete answer must not sit in browsers' caches for an hour.
+      return data(merged, env, fresh || missing.length > 0);
     }
     case 'calendar':
       return data(await listings.calendar(id), env, fresh);
