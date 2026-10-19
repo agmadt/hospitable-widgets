@@ -1,5 +1,5 @@
-/*! Hospitable Listing Widgets v1.0.0 | MIT | github.com/agmadt/hospitable-widgets */
-// The core: finds each element with data-hosp-template, fetches its data from
+/*! Hospitable Listing Widgets v1.1.0 | MIT | github.com/agmadt/hospitable-widgets */
+// The core: finds each widget (data-hosp or data-hosp-template), fetches its data from
 // the host's Worker (one request per widget), fills the template and renders
 // it into a shadow root. Formatting is built in; calendar, reviews, the photo
 // viewer and the pager are modules next to this file (modules/*.js), loaded
@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
 
   if (window.HospWidgets && window.HospWidgets.version) {
     // Loaded twice (two snippets on one page): reuse the first copy.
@@ -513,7 +513,7 @@
     for (var key in ds) {
       if (key.indexOf('hosp') !== 0 || key.length <= 4) continue;
       var name = key.charAt(4).toLowerCase() + key.slice(5);
-      if (name === 'template' || name === 'worker' || name === 'property') continue;
+      if (/^(template|worker|property|style|options|data|modules|eager|manual|fallback)$/.test(name)) continue;
       opts[name] = ds[key];
     }
     return opts;
@@ -526,7 +526,7 @@
   }
 
   function fallbackData(el, id) {
-    var node = document.getElementById(el.getAttribute('data-hosp-fallback') || id + '-fallback');
+    var node = document.getElementById(el.getAttribute('data-hosp-fallback') || (id ? id + '-fallback' : ''));
     if (!node) return null;
     try {
       return JSON.parse(node.textContent);
@@ -577,58 +577,106 @@
     return v == null ? null : v.split(/[\s,]+/).filter(Boolean);
   }
 
-  /** { datasets, modules } for a widget element. */
+  /** The widget's template: its own <template>, or the starter data-hosp names. */
+  function templateOf(el) {
+    var id = el.getAttribute('data-hosp-template');
+    if (id) {
+      var src = templateSource(id);
+      return src == null ? Promise.reject(new Error('no <template id="' + id + '"> found')) : Promise.resolve(src);
+    }
+    return need(['templates']).then(function () {
+      return modules.templates.compile(el.getAttribute('data-hosp'), el.getAttribute('data-hosp-options'), el.getAttribute('data-hosp-style'));
+    });
+  }
+
+  /** { datasets, modules } for a widget: from the snippet, or worked out from its template. */
   function needsOf(el, template) {
     var datasets = list(el, 'data-hosp-data');
     var mods = list(el, 'data-hosp-modules');
     if (datasets && mods) return Promise.resolve({ datasets: datasets, modules: mods });
-    return need(['analyze']).then(function () {
+    return Promise.all([template, need(['analyze'])]).then(function (r) {
       var a = modules.analyze;
-      datasets = datasets || a.analyze(template).datasets;
-      return { datasets: datasets, modules: mods || a.plan(template, datasets) };
+      datasets = datasets || a.analyze(r[0]).datasets;
+      return { datasets: datasets, modules: mods || a.plan(r[0], datasets) };
     });
+  }
+
+  // The last data each widget showed is kept in the visitor's browser, so a
+  // returning visitor still sees the widget while the Worker can't be reached.
+  var CACHE = 'hosp:v1:';
+
+  function remember(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), data: data })); } catch (e) { /* storage full or blocked */ }
+  }
+
+  function recall(key) {
+    try {
+      var hit = JSON.parse(localStorage.getItem(key));
+      return hit && hit.data ? hit.data : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function unavailable(el) {
+    var root = el.shadowRoot || el.attachShadow({ mode: 'open' });
+    root.innerHTML = '<p style="margin:0;padding:16px;font:14px/1.5 system-ui,sans-serif;color:#71717a;text-align:center">This content can’t be shown right now. Please try again later.</p>';
+    el.setAttribute('data-hosp-state', 'unavailable');
   }
 
   function mount(el) {
     if (el.__hospMounted) return el.__hospMounted;
     var id = el.getAttribute('data-hosp-template');
-    var template = templateSource(id);
-    if (template == null) {
-      warn('no <template id="' + id + '"> found');
-      return Promise.resolve();
-    }
+    var label = id || el.getAttribute('data-hosp');
     var opts = readOptions(el);
     var worker = el.getAttribute('data-hosp-worker');
     var property = el.getAttribute('data-hosp-property');
+    var key = null;
     var done = false;
-    var snapshotShown = false;
+    var backupShown = false;
 
-    // The builder writes what a widget needs into the snippet; hand-written
-    // snippets get it worked out by the analyze module.
+    // Template, code and data load side by side; data waits for nothing when
+    // the snippet says what the widget needs.
+    var template = templateOf(el);
     var needs = needsOf(el, template);
-    // Code and data load side by side; neither waits for the other.
-    var ready = needs.then(function (n) { return need(n.modules); }).catch(function (err) { warn(err.message); });
-    var data = needs.then(function (n) { return fetchData(worker, property, n.datasets); });
+    var code = Promise.all([template, needs.then(function (n) { return need(n.modules); }).catch(function (err) { warn(err.message); })])
+      .then(function (r) { return r[0]; });
+    var data = needs.then(function (n) {
+      key = CACHE + worker + '|' + (property || '') + '|' + n.datasets.slice().sort().join(',');
+      return fetchData(worker, property, n.datasets);
+    });
 
-    function showSnapshot(reason) {
-      if (done || snapshotShown) return Promise.resolve();
-      var fb = fallbackData(el, id);
-      if (!fb) {
-        if (reason) warn('could not load "' + id + '" (' + reason + ') and there is no fallback snapshot');
-        return Promise.resolve();
-      }
-      snapshotShown = true;
-      return ready.then(function () { if (!done) renderTo(el, template, fb, opts, 'snapshot'); });
+    // While the Worker is slow or down: the snippet's own snapshot (older
+    // snippets), else this visitor's last copy, else a short message.
+    function showBackup(reason) {
+      if (done || backupShown) return Promise.resolve();
+      return code.then(function (tpl) {
+        if (done) return;
+        var snapshot = fallbackData(el, id);
+        var cached = snapshot ? null : key && recall(key);
+        if (snapshot || cached) {
+          backupShown = true;
+          renderTo(el, tpl, snapshot || cached, opts, snapshot ? 'snapshot' : 'cached');
+        } else if (reason) {
+          warn('could not load "' + label + '" (' + reason + ')');
+          unavailable(el);
+        }
+      }, function (err) {
+        if (!reason) return;
+        warn('could not load "' + label + '" (' + err.message + ')');
+        unavailable(el);
+      });
     }
 
-    var slow = setTimeout(showSnapshot, SNAPSHOT_DELAY);
-    var p = Promise.all([data, ready]).then(function (r) {
+    var slow = setTimeout(showBackup, SNAPSHOT_DELAY);
+    var p = Promise.all([data, code]).then(function (r) {
       clearTimeout(slow);
       done = true;
-      renderTo(el, template, r[0], opts, 'live');
+      if (key) remember(key, r[0]);
+      renderTo(el, r[1], r[0], opts, 'live');
     }, function (err) {
       clearTimeout(slow);
-      return showSnapshot((err && err.message) || 'error').then(function () { done = true; });
+      return showBackup((err && err.message) || 'error').then(function () { done = true; });
     });
     el.__hospMounted = p;
     return p;
@@ -647,7 +695,7 @@
     : null;
 
   function scan(root) {
-    var nodes = (root || document).querySelectorAll('[data-hosp-template]');
+    var nodes = (root || document).querySelectorAll('[data-hosp-template], [data-hosp]');
     var all = [];
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
@@ -658,8 +706,9 @@
         el.__hospWaiting = new Promise(function (resolve) { el.__hospResolve = resolve; });
         observer.observe(el);
         all.push(el.__hospWaiting);
-        // Warm the modules now; they are tiny and cached.
+        // Warm the code now; it is small and cached.
         if (el.getAttribute('data-hosp-modules')) need(list(el, 'data-hosp-modules')).catch(function () {});
+        if (el.hasAttribute('data-hosp') && !el.hasAttribute('data-hosp-template')) templateOf(el).catch(function () {});
       } else {
         all.push(mount(el));
       }

@@ -1,0 +1,28 @@
+<!--hw {"name":"Policies and fees","blurb":"Cancellation policy, cleaning and other fees, deposits","height":440,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Policies and fees"},
+ {"key":"show_cancellation","label":"Show cancellation policy","type":"toggle","default":"on"},
+ {"key":"show_fees","label":"Show fees","type":"toggle","default":"on"}
+]} -->
+<style>
+.pol{margin-bottom:calc(var(--hw-space) * 1.4)}
+.pol h3,.fees h3{margin-bottom:.4em}
+.pol p{white-space:pre-line;margin:0}
+.disc{display:flex;flex-wrap:wrap;gap:.5em;margin-top:1em}
+.disc span{padding:.35em .75em;border-radius:99px;background:var(--hw-soft);color:var(--hw-accent);font-weight:600;font-size:.88em}
+.fees table{width:100%;border-collapse:collapse}
+.fees td{padding:.6em 0;border-bottom:1px solid var(--hw-line);vertical-align:top}
+.fees td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:1em}
+.fees small{display:block;color:var(--hw-muted);font-weight:400}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2>[[heading]]</h2>
+  [[#show_cancellation]]{#cancellation_policy}<div class="pol"><h3>Cancellation</h3><p>{cancellation_policy}</p></div>{/cancellation_policy}
+  {#payment_terms}<div class="pol"><h3>Payment</h3><p>{payment_terms}</p></div>{/payment_terms}[[/show_cancellation]]
+  [[#show_fees]]<div class="fees"><h3>Fees</h3><table>
+    <!--{#fees}--><tr><td>{name}{#note}<small>{note}</small>{/note}</td><td>{formatted}</td></tr><!--{/fees}-->
+    <!--{#extra_guest_fee}--><tr><td>Extra guest{#extra_guest_after}<small>Per guest per night after {extra_guest_after} guests</small>{/extra_guest_after}</td><td>{extra_guest_fee_formatted}</td></tr><!--{/extra_guest_fee}-->
+    <!--{#pet_fee}--><tr><td>Pet fee</td><td>{pet_fee_formatted}</td></tr><!--{/pet_fee}-->
+    <!--{#security_deposit}--><tr><td>Security deposit<small>Refundable</small></td><td>{security_deposit_formatted}</td></tr><!--{/security_deposit}-->
+  </table>{#discounts.0}<div class="disc">{#discounts}<span>{name}: {percent}% off</span>{/discounts}</div>{/discounts.0}</div>[[/show_fees]]
+</section>

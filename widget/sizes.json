@@ -1,5 +1,6 @@
 {
-  "widget.js": 5441,
+  "widget.js": 5862,
+  "modules/templates.js": 2443,
   "modules/analyze.js": 840,
   "modules/calendar.js": 1202,
   "modules/reviews.js": 904,

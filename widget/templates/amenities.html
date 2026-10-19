@@ -1,0 +1,34 @@
+<!--hw {"name":"Amenities","blurb":"What the place offers, with a pop-up for the full list","height":480,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"What this place offers"},
+ {"key":"columns","label":"Columns","type":"select","default":"2","choices":[["1","1"],["2","2"],["3","3"]]},
+ {"key":"amenities-limit","label":"Show at most (0 = all)","type":"number","default":"10","target":"attr","min":0,"max":200},
+ {"key":"more_text","label":"Button text","type":"text","default":"Show all {count} amenities","tokens":{"count":"amenity_count","more":"amenities_more"},"hint":"{count} is the number of amenities, {more} the number not shown yet. Both come from your listing."},
+ {"key":"dialog_title","label":"Pop-up title","type":"text","default":"What this place offers"}
+]} -->
+<style>
+.am{list-style:none;margin:0;padding:0;columns:[[columns]] 200px;column-gap:calc(var(--hw-space) * 2)}
+.am li{display:flex;gap:.6em;align-items:flex-start;padding:.45em 0;break-inside:avoid}
+.am svg{flex:none;color:var(--hw-accent);margin-top:.15em}
+.am-more{margin-top:calc(var(--hw-space) * 1)}
+.am-pop{border:0;padding:0;margin:auto;width:min(640px,calc(100vw - 24px));max-height:min(86vh,760px);overflow:auto;overscroll-behavior:contain;border-radius:var(--hw-radius);background:var(--hw-bg);color:var(--hw-text);font:inherit;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.am-pop::backdrop{background:rgba(10,10,12,.5)}
+.am-pop-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:1em;padding:calc(var(--hw-space) * 1.1) calc(var(--hw-space) * 1.5);background:var(--hw-bg);border-bottom:1px solid var(--hw-line)}
+.am-pop-head h2{margin:0;font-size:1.25em}
+.am-pop-body{padding:calc(var(--hw-space) * 1.25) calc(var(--hw-space) * 1.5)}
+.am-pop .am{columns:2 180px}
+.am-pop .am li{padding:.65em 0;border-bottom:1px solid var(--hw-line)}
+.am-close{all:unset;cursor:pointer;flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--hw-text)}
+.am-close:hover,.am-close:focus-visible{background:var(--hw-soft)}
+.am-close svg{width:18px;height:18px}
+@media (prefers-reduced-motion:no-preference){.am-pop:popover-open{animation:am-in .2s ease-out}@keyframes am-in{from{opacity:0;transform:translateY(12px)}}}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2>[[heading]]</h2>
+  <ul class="am">{#amenities}<li><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>{.}</li>{/amenities}</ul>
+  {#amenities_more}<button class="hw-btn ghost am-more" type="button" popovertarget="am-all">[[more_text]]</button>
+  <div id="am-all" class="am-pop" popover role="dialog" aria-modal="true" aria-labelledby="am-all-title">
+    <div class="am-pop-head"><h2 id="am-all-title">[[dialog_title]]</h2><button class="am-close" type="button" popovertarget="am-all" popovertargetaction="hide" aria-label="Close"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="am-pop-body"><ul class="am">{#amenities_all}<li><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>{.}</li>{/amenities_all}</ul></div>
+  </div>{/amenities_more}
+</section>

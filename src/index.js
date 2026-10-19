@@ -25,7 +25,8 @@ function respond(body, status, env, extra = {}) {
 
 function data(body, env, fresh) {
   return respond({ mode: isDummy(env) ? 'dummy' : 'live', ...body }, 200, env, {
-    'Cache-Control': fresh ? 'no-store' : 'public, max-age=300',
+    // Data refreshes hourly, so a visitor's browser may keep it for an hour.
+    'Cache-Control': fresh ? 'no-store' : 'public, max-age=3600',
   });
 }
 

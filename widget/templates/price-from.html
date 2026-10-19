@@ -1,0 +1,24 @@
+<!--hw {"name":"Price from","blurb":"Lowest upcoming nightly price, with a booking button","height":180,"options":[
+ {"key":"prefix","label":"Text before the price","type":"text","default":"From"},
+ {"key":"suffix","label":"Text after the price","type":"text","default":"/ night"},
+ {"key":"show_min_stay","label":"Show minimum stay","type":"toggle","default":"on"},
+ {"key":"button_text","label":"Button text (empty = no button)","type":"text","default":"Check availability"},
+ {"key":"button_url","label":"Button link (your booking page)","type":"url","default":"https://"}
+]} -->
+<style>
+.pf{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:calc(var(--hw-space) * 1)}
+.pf-price{font-size:1.05em}
+.pf-price b{font-family:var(--hw-heading-font,var(--hw-font));font-size:2em;font-weight:700;letter-spacing:-.02em;margin:0 .1em}
+.pf-sub{font-size:.88em;color:var(--hw-muted)}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="pf">
+    <div>
+      {#price_from_formatted}<div class="pf-price">[[prefix]] <b>{price_from_formatted}</b> [[suffix]]</div>{/price_from_formatted}
+      {^price_from_formatted}<div class="pf-price">Fully booked for now</div>{/price_from_formatted}
+      [[#show_min_stay]]{#min_stay_label}<div class="pf-sub">{min_stay_label}{#next_available} · next opening {next_available}{/next_available}</div>{/min_stay_label}[[/show_min_stay]]
+    </div>
+    [[#button_text]]<a class="hw-btn" href="[[button_url]]" target="_blank" rel="noopener">[[button_text]]</a>[[/button_text]]
+  </div>
+</section>

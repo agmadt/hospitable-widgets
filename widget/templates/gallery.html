@@ -1,0 +1,36 @@
+<!--hw {"name":"Photo gallery","blurb":"Your photos in your order, with a full-screen viewer","height":560,"options":[
+ {"key":"layout","label":"Layout","type":"select","default":"mosaic","choices":[["mosaic","Mosaic (1 large + 4)"],["grid","Even grid"],["carousel","Carousel"]]},
+ {"key":"photos-limit","label":"Photos on the page (0 = all)","type":"number","default":"0","target":"attr","min":0,"max":200},
+ {"key":"captions","label":"Show captions","type":"toggle","default":"off"}
+]} -->
+<style>
+.g{position:relative}
+.g img{width:100%;height:100%;object-fit:cover;display:block;border-radius:calc(var(--hw-radius) * .6);background:var(--hw-soft);transition:filter .2s}
+.g img:hover{filter:brightness(.92)}
+.g figure{margin:0;position:relative}
+.g figcaption{font-size:.85em;color:var(--hw-muted);padding:.4em .1em 0}
+.mosaic{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:repeat(2,minmax(120px,190px));gap:8px}
+.mosaic figure:first-child{grid-row:span 2}
+.mosaic figure:nth-child(n+6){display:none}
+.mosaic figcaption{display:none}
+@media (max-width:560px){.mosaic{grid-template-columns:1fr 1fr;grid-template-rows:200px 110px}.mosaic figure:first-child{grid-column:span 2;grid-row:auto}.mosaic figure:nth-child(n+4){display:none}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.grid img{aspect-ratio:4/3;height:auto}
+.carousel .track{display:grid;grid-template-columns:repeat(var(--hosp-per-view,1),1fr);gap:10px}
+.carousel img{aspect-ratio:3/2;height:auto}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-top:.75em}
+.nav button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px var(--hw-line)}
+.nav button:disabled{opacity:.35;cursor:default}
+.all{position:absolute;right:12px;bottom:12px;font-size:.9em;padding:.55em .9em;background:var(--hw-bg);color:var(--hw-text)!important;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="g" data-hosp-lightbox>
+    [[^layout=carousel]]<div class="[[layout]]">{#photos}<figure><img src="{url}" alt="{alt}" data-index="{index}">[[#captions]]{#caption}<figcaption>{caption}</figcaption>{/caption}[[/captions]]</figure>{/photos}</div>
+    {#photo_count}<button class="hw-btn all" data-hosp-open="0"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>Show all {photo_count} photos</button>{/photo_count}[[/layout=carousel]]
+    [[#layout=carousel]]<div class="carousel" data-hosp-pager data-hosp-per-view="auto" data-hosp-min-width="260" tabindex="0">
+      <div class="track">{#photos}<figure data-hosp-page><img src="{url}" alt="{alt}" data-index="{index}">[[#captions]]{#caption}<figcaption>{caption}</figcaption>{/caption}[[/captions]]</figure>{/photos}</div>
+      <div class="nav"><button data-hosp-prev aria-label="Previous photos"><svg class="hw-ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><span class="hw-small hw-muted" data-hosp-page-label></span><button data-hosp-next aria-label="Next photos"><svg class="hw-ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+    </div>[[/layout=carousel]]
+  </div>
+</section>

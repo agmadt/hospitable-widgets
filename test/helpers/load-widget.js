@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../widget');
 export const widgetSource = readFileSync(resolve(dir, 'widget.js'), 'utf8');
-export const MODULES = ['analyze', 'calendar', 'reviews', 'lightbox', 'pager'];
+export const MODULES = ['analyze', 'templates', 'calendar', 'reviews', 'lightbox', 'pager'];
 export const moduleSource = Object.fromEntries(MODULES.map((m) => [m, readFileSync(resolve(dir, `modules/${m}.js`), 'utf8')]));
 
 // Indirect eval runs a script in global scope, like a <script> tag.

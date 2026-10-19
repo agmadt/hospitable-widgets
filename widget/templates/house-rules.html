@@ -1,0 +1,25 @@
+<!--hw {"name":"House rules","blurb":"Pets, smoking, events and your additional rules","height":420,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"House rules"},
+ {"key":"show_times","label":"Show check-in and check-out","type":"toggle","default":"on"},
+ {"key":"show_additional","label":"Show additional rules","type":"toggle","default":"on"}
+]} -->
+<style>
+.hr-times{display:flex;flex-wrap:wrap;gap:.5em 2em;margin:0 0 1em;padding:0 0 1em;border-bottom:1px solid var(--hw-line)}
+.hr-times b{font-weight:600}
+.hr{list-style:none;margin:0;padding:0;display:grid;gap:.55em}
+.hr li{display:flex;gap:.65em;align-items:center}
+.hr .yes{color:var(--hw-accent)}
+.hr .no{color:var(--hw-muted)}
+.hr-more{margin-top:1.1em;white-space:pre-line}
+.hr-more h3{margin-bottom:.4em}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2>[[heading]]</h2>
+  [[#show_times]]<p class="hr-times">{#check_in}<span>Check-in: <b>after {check_in_formatted}</b></span>{/check_in}{#check_out}<span>Check-out: <b>before {check_out_formatted}</b></span>{/check_out}</p>[[/show_times]]
+  <ul class="hr">
+    {#rules}<li>{#allowed}<svg class="hw-ico yes" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>{/allowed}{^allowed}<svg class="hw-ico no" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 18 18 6"/></svg>{/allowed}<span>{text}</span></li>{/rules}
+    {#max_guests}<li><svg class="hw-ico yes" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/></svg><span>{guests_label} maximum</span></li>{/max_guests}
+  </ul>
+  [[#show_additional]]{#additional_rules}<div class="hr-more"><h3>Additional rules</h3>{additional_rules}</div>{/additional_rules}[[/show_additional]]
+</section>

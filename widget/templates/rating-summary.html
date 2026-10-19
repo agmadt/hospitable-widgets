@@ -1,0 +1,27 @@
+<!--hw {"name":"Rating summary","blurb":"Average rating and review count","height":200,"options":[
+ {"key":"layout","label":"Layout","type":"select","default":"badge","choices":[["badge","Badge"],["large","Large"]]},
+ {"key":"label","label":"Label","type":"text","default":"Guest rating"}
+]} -->
+<style>
+.rs{display:flex;align-items:center;gap:calc(var(--hw-space) * 1)}
+.rs-num{font-family:var(--hw-heading-font,var(--hw-font));font-weight:700;line-height:1;color:var(--hw-accent)}
+.rs-stars{position:relative;display:inline-block;letter-spacing:.12em;color:var(--hw-line);font-size:1.15em;line-height:1}
+.rs-stars i{position:absolute;inset:0;overflow:hidden;color:var(--hw-accent);font-style:normal;white-space:nowrap}
+.rs-label{font-weight:600}
+.badge .rs-num{font-size:2.4em}
+.large{text-align:center}
+.large .rs{flex-direction:column;gap:.5em}
+.large .rs-num{font-size:4.2em}
+.large .rs-stars{font-size:1.6em}
+</style>
+<section class="hw [[card]] [[layout]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="rs">
+    <div class="rs-num">{rating_average_formatted}</div>
+    <div>
+      <div class="rs-stars" role="img" aria-label="{rating_average_formatted} out of 5 stars">★★★★★<i style="width:{rating_percent}%">★★★★★</i></div>
+      <div class="rs-label">[[label]]</div>
+      <div class="hw-small hw-muted">{review_count_label}</div>
+    </div>
+  </div>
+</section>

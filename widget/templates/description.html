@@ -1,0 +1,26 @@
+<!--hw {"name":"Description","blurb":"Listing name, summary and full description","height":560,"options":[
+ {"key":"show_location","label":"Show city","type":"toggle","default":"on"},
+ {"key":"show_summary","label":"Show summary","type":"toggle","default":"on"},
+ {"key":"read_more","label":"Collapse long text behind “Read more”","type":"toggle","default":"off"}
+]} -->
+<style>
+.d-name{font-size:1.75em}
+.d-loc{display:flex;align-items:center;gap:.35em;margin:-.3em 0 1em}
+.d-sum{font-size:1.12em;line-height:1.5}
+.d-body{white-space:pre-line}
+.d-clamp{max-height:11.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent)}
+#d-more:checked ~ .d-clamp{max-height:none;-webkit-mask-image:none;mask-image:none}
+.d-toggle{display:inline-block;margin-top:.6em;font-weight:600;color:var(--hw-accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#d-more:checked ~ .d-toggle .d-less,.d-toggle .d-show{display:inline}
+.d-toggle .d-less,#d-more:checked ~ .d-toggle .d-show{display:none}
+#d-more{position:absolute;opacity:0;pointer-events:none}
+</style>
+<article class="hw [[card]]"[[#read_more]] data-grows[[/read_more]]>
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2 class="d-name">{property_name}</h2>
+  [[#show_location]]{#location}<p class="d-loc hw-muted"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>{location}</p>{/location}[[/show_location]]
+  [[#show_summary]]{#summary}<p class="d-sum">{summary}</p>{/summary}[[/show_summary]]
+  [[#read_more]]<input type="checkbox" id="d-more" aria-label="Show the full description">[[/read_more]]
+  <div class="d-body[[#read_more]] d-clamp[[/read_more]]">{description}</div>
+  [[#read_more]]<label for="d-more" class="d-toggle"><span class="d-show">Read more</span><span class="d-less">Show less</span></label>[[/read_more]]
+</article>

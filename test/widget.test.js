@@ -227,13 +227,14 @@ describe('rendering into the page', () => {
     expect(el.shadowRoot.querySelector('h3').textContent).toBe('Villa (snapshot)');
   });
 
-  it('renders nothing and warns when there is no fallback', async () => {
+  it('shows a short message and warns when there is no fallback', async () => {
     stubFetch({});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const el = snippet({ template: '<h3>{property_name}</h3>' });
     await W.scan();
-    expect(el.shadowRoot).toBeNull();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('no fallback snapshot'));
+    expect(el.getAttribute('data-hosp-state')).toBe('unavailable');
+    expect(el.shadowRoot.querySelector('h3')).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('could not load "t1"'));
   });
 
   it('keeps unsafe links out of the page', async () => {
@@ -320,7 +321,7 @@ describe('size', () => {
     const { minify } = await import('terser');
     // As jsDelivr serves them: minified, then compressed.
     const size = async (src) => gzipSync((await minify(src)).code, { level: 9 }).length;
-    expect(await size(widgetSource)).toBeLessThan(6 * 1024);
+    expect(await size(widgetSource)).toBeLessThan(6.5 * 1024);
     // The photo viewer, with its filmstrip, is the biggest module.
     for (const m of MODULES) expect(await size(moduleSource[m]), m).toBeLessThan((m === 'lightbox' ? 3 : 2.5) * 1024);
   });

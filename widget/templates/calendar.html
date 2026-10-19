@@ -1,0 +1,39 @@
+<!--hw {"name":"Availability calendar","blurb":"Open and booked dates, labeled “updated hourly”","height":470,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Availability"},
+ {"key":"show_prices","label":"Show nightly prices","type":"toggle","default":"on"},
+ {"key":"months","label":"Months ahead","type":"number","default":"12","target":"attr","min":1,"max":12},
+ {"key":"week-start","label":"Week starts on","type":"select","default":"","target":"attr","choices":[["","Visitor's locale"],["monday","Monday"],["sunday","Sunday"]]}
+]} -->
+<style>
+.cal-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.4em 1em;margin-bottom:.9em}
+.cal-head h2{margin:0}
+.cal-months{display:grid;grid-template-columns:repeat(var(--hosp-per-view,1),1fr);gap:calc(var(--hw-space) * 2)}
+.cal-m h3{text-align:center;font-size:1em;margin-bottom:.6em}
+table{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
+th{font-size:.72em;font-weight:600;color:var(--hw-muted);padding:.2em 0;text-transform:uppercase;letter-spacing:.04em}
+td{height:2.9em;padding:0;text-align:center;vertical-align:middle;border-radius:calc(var(--hw-radius) * .4);font-size:.92em;line-height:1.1}
+td small{display:block;font-size:.66em;opacity:.8;margin-top:.15em}
+td.available{background:var(--hw-soft);font-weight:600}
+td.booked{color:var(--hw-muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--hw-text) 30%,transparent)}
+td.past,td.unknown{color:var(--hw-line)}
+td.today{box-shadow:inset 0 0 0 1.5px var(--hw-accent)}
+.cal-nav{display:flex;gap:.4em}
+.cal-nav button{all:unset;cursor:pointer;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px var(--hw-line)}
+.cal-nav button:disabled{opacity:.35;cursor:default}
+.cal-foot{display:flex;flex-wrap:wrap;gap:.5em 1.4em;align-items:center;margin-top:1em;font-size:.85em;color:var(--hw-muted)}
+.key{display:inline-flex;align-items:center;gap:.4em}
+.key i{width:14px;height:14px;border-radius:4px;background:var(--hw-soft);display:inline-block}
+.key i.b{background:none;box-shadow:inset 0 0 0 1px var(--hw-line)}
+</style>
+<section class="hw [[card]]" data-hosp-pager data-hosp-per-view="auto" data-hosp-min-width="290" tabindex="0">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="cal-head"><h2>[[heading]]</h2><div class="cal-nav"><button data-hosp-prev aria-label="Previous month"><svg class="hw-ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><button data-hosp-next aria-label="Next month"><svg class="hw-ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
+  <div class="cal-months">
+    {#months}<div class="cal-m" data-hosp-page><h3>{label}</h3>
+      <table><thead><tr><!--{#weekdays}--><th scope="col">{label}</th><!--{/weekdays}--></tr></thead><tbody>
+      <!--{#weeks}--><tr><!--{#days}--><td class="{state}{#today} today{/today}" title="{label}">{day}[[#show_prices]]{#price_formatted}<small>{price_formatted}</small>{/price_formatted}[[/show_prices]]</td><!--{/days}--></tr><!--{/weeks}-->
+      </tbody></table>
+    </div>{/months}
+  </div>
+  <div class="cal-foot"><span class="key"><i></i>Available</span><span class="key"><i class="b"></i>Booked</span>{#min_stay_label}<span>{min_stay_label}</span>{/min_stay_label}<span>Updated hourly</span></div>
+</section>

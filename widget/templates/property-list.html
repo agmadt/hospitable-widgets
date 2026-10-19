@@ -1,0 +1,28 @@
+<!--hw {"name":"Property list","blurb":"A card for each listed property","height":760,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Our places"},
+ {"key":"min_width","label":"Card width","type":"select","default":"260","choices":[["220","Compact"],["260","Medium"],["320","Large"]]},
+ {"key":"link","label":"Card link (use {id} for the property)","type":"pattern","default":""}
+]} -->
+<style>
+.pl{display:grid;grid-template-columns:repeat(auto-fill,minmax([[min_width]]px,1fr));gap:calc(var(--hw-space) * 1.2)}
+.pl a{color:inherit;text-decoration:none;display:block}
+.pl figure{margin:0}
+.pl img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:calc(var(--hw-radius) * .75);display:block;background:var(--hw-soft);transition:transform .3s}
+.pl a:hover img{transform:scale(1.02)}
+.pl h3{margin:.65em 0 .1em}
+.pl p{margin:0}
+.pl-price{margin-top:.25em!important}
+.pl-price b{font-weight:700}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  [[#heading]]<h2>[[heading]]</h2>[[/heading]]
+  <div class="pl">
+    {#properties}<article>[[#link]]<a href="[[link]]">[[/link]]
+      <figure><img src="{photo}" alt="{property_name}"></figure>
+      <h3>{property_name}</h3>
+      <p class="hw-muted hw-small">{city}{#guests_label} · {guests_label}{/guests_label}{#bedrooms_label} · {bedrooms_label}{/bedrooms_label}</p>
+      {#price_from_formatted}<p class="pl-price"><b>{price_from_formatted}</b> / night</p>{/price_from_formatted}
+    [[#link]]</a>[[/link]]</article>{/properties}
+  </div>
+</section>

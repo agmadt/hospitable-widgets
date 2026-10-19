@@ -1,0 +1,20 @@
+<!--hw {"name":"Sleeping arrangements","blurb":"Each room and its beds","height":300,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Where you'll sleep"},
+ {"key":"style","label":"Style","type":"select","default":"tiles","choices":[["tiles","Tiles"],["outline","Outlined"]]}
+]} -->
+<style>
+.sl{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:calc(var(--hw-space) * .75);list-style:none;margin:0;padding:0}
+.sl li{display:flex;align-items:flex-start;gap:.7em;padding:calc(var(--hw-space) * .9);border-radius:calc(var(--hw-radius) * .75);background:var(--hw-soft)}
+.outline .sl li{background:none;box-shadow:inset 0 0 0 1px var(--hw-line)}
+.sl svg{flex:none;width:1.35em;height:1.35em;color:var(--hw-accent)}
+.sl div{display:flex;flex-direction:column;gap:.1em;min-width:0}
+.sl b{font-size:1.02em;line-height:1.3}
+.sl span{font-size:.82em;line-height:1.3;color:var(--hw-muted)}
+</style>
+<section class="hw [[card]] [[style]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2>[[heading]]</h2>
+  <ul class="sl">
+    {#rooms}<li><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7m0 7h18v4m0-4v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/></svg><div><b>{name}</b><span>{beds_text}</span></div></li>{/rooms}
+  </ul>
+</section>

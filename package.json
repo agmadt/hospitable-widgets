@@ -1,6 +1,6 @@
 {
   "name": "hospitable-widgets",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Always-current Hospitable listing widgets for any website: one Cloudflare Worker, one snippet.",
   "license": "MIT",

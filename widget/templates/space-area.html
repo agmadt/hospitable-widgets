@@ -1,0 +1,29 @@
+<!--hw {"name":"The space and the area","blurb":"Space overview, neighborhood and getting around","height":620,"options":[
+ {"key":"style","label":"Style","type":"select","default":"stacked","choices":[["stacked","Stacked sections"],["accordion","Accordion"]]},
+ {"key":"space_title","label":"Space heading","type":"text","default":"The space"},
+ {"key":"area_title","label":"Neighborhood heading","type":"text","default":"The neighborhood"},
+ {"key":"around_title","label":"Getting around heading","type":"text","default":"Getting around"}
+]} -->
+<style>
+.sa-sec{white-space:pre-line}
+.sa-sec + .sa-sec{margin-top:calc(var(--hw-space) * 1.5);padding-top:calc(var(--hw-space) * 1.5);border-top:1px solid var(--hw-line)}
+.sa-sec h3{font-size:1.15em;margin-bottom:.45em;white-space:normal}
+.sa-city{display:flex;align-items:center;gap:.35em;margin-bottom:1em}
+details{border-top:1px solid var(--hw-line);white-space:pre-line}
+details:last-of-type{border-bottom:1px solid var(--hw-line)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:.9em 0;font-weight:600;font-size:1.05em;white-space:normal}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:1.4em;font-weight:400;color:var(--hw-accent);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details > div{padding:0 0 1em}
+</style>
+<section class="hw [[card]]"[[#style=accordion]] data-grows[[/style=accordion]]>
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {#location}<p class="sa-city hw-muted"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>{location}</p>{/location}
+  [[#style=stacked]]{#space}<div class="sa-sec"><h3>[[space_title]]</h3>{space}</div>{/space}
+  {#neighborhood}<div class="sa-sec"><h3>[[area_title]]</h3>{neighborhood}</div>{/neighborhood}
+  {#getting_around}<div class="sa-sec"><h3>[[around_title]]</h3>{getting_around}</div>{/getting_around}[[/style=stacked]]
+  [[#style=accordion]]{#space}<details open><summary>[[space_title]]</summary><div>{space}</div></details>{/space}
+  {#neighborhood}<details><summary>[[area_title]]</summary><div>{neighborhood}</div></details>{/neighborhood}
+  {#getting_around}<details><summary>[[around_title]]</summary><div>{getting_around}</div></details>{/getting_around}[[/style=accordion]]
+</section>

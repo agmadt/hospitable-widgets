@@ -74,7 +74,7 @@ describe('routes', () => {
   it('serves public, cacheable JSON any website can read', async () => {
     const { res } = await json('/api/properties', dummyEnv);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=300');
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
     expect(res.headers.get('X-Hosp-Mode')).toBe('dummy');
   });
 
@@ -202,7 +202,9 @@ describe('dummy mode', () => {
     expect(html).toContain(`data-hosp-worker="${ORIGIN}"`);
     expect(html).toContain(`data-hosp-property="${VILLA}"`);
     expect(html).toContain('<script src="/widget.js" defer>');
-    expect((html.match(/data-hosp-template=/g) || []).length).toBe(10);
+    // One-line snippets, one per starter template.
+    expect((html.match(/<div data-hosp="/g) || []).length).toBe(16);
+    expect(html).not.toContain('<template');
   });
 
   it('never calls Hospitable and skips the cron', async () => {

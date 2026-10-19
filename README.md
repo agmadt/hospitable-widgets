@@ -25,14 +25,14 @@ The Worker runs on Cloudflare's free plan, which covers about 100,000 page views
 ```
  Your website (Wix, …)                Your Cloudflare account                 Hospitable
  ┌──────────────────────┐   data     ┌──────────────────────────┐  hourly   ┌──────────────┐
- │ snippet              │ ─────────▶ │ Worker                   │ ────────▶ │ Public API   │
- │  <template> design   │  public    │  holds HOSPITABLE_PAT    │  read     │              │
- │  fallback snapshot   │  JSON      │  KV: last good data      │  only     │              │
- │  widget.js ◀─ jsDelivr            │  cron: refresh every hour│           │              │
+ │ snippet: one <div>   │ ─────────▶ │ Worker                   │ ────────▶ │ Public API   │
+ │  and one <script>    │  public    │  holds HOSPITABLE_PAT    │  read     │              │
+ │  widget.js, template │  JSON      │  KV: last good data      │  only     │              │
+ │  ◀─ jsDelivr         │            │  cron: refresh every hour│           │              │
  └──────────────────────┘            └──────────────────────────┘           └──────────────┘
 ```
 
-1. `widget.js` loads from jsDelivr, so it costs your Worker nothing, and finds each widget on the page. As a widget nears the screen, it asks your Worker for its data in one request and loads the small modules the widget needs (calendar, reviews, photo viewer, pager) at the same time.
+1. `widget.js` loads from jsDelivr, so it costs your Worker nothing, and finds each widget on the page. As a widget nears the screen, it asks your Worker for its data in one request and, at the same time, loads the widget's template and the small modules it needs (calendar, reviews, photo viewer, pager) from jsDelivr.
 2. The Worker answers from a 60-second memory cache, then from KV. Only the first request for a data set calls Hospitable; after that, the hourly cron keeps it fresh.
 3. `widget.js` fills your template and renders it in a shadow root, so your website's CSS and the widget's CSS can't affect each other.
 
@@ -43,7 +43,7 @@ You paste two things in total: your token into Cloudflare, and one snippet into 
 1. Open the [builder](https://hospitable-widget.adhityoagam.com/) and pick a widget, colors, fonts and layout. Your design is saved in your browser.
 2. In Hospitable, go to Apps → API access → Access tokens and add a token with Read permission. Tokens last one year, and the API is available on Hospitable's Host plan and up.
 3. Click Deploy to Cloudflare, here or in the builder. Sign in to Cloudflare and GitHub (both accept Google sign-in), paste your token into `HOSPITABLE_PAT` and click Deploy. Cloudflare creates the Worker, its KV storage and the hourly refresh.
-4. In the Cloudflare dashboard, click your Worker's link (`https://hospitable-widgets.<you>.workers.dev`). It sends you back to the builder, already connected.
+4. Click your Worker's address (`https://hospitable-widgets.<you>.workers.dev`) on Cloudflare's success page or in the dashboard. It opens the builder in a new tab, already connected, and the builder tab you came from connects too.
 5. Pick a property and check the preview, which now shows your real data.
 6. Copy the snippet and paste it into an Embed HTML element (in Wix: Add Elements → Embed Code → Embed HTML). Wix doesn't resize embeds by itself, so set the element's height to the one the builder suggests.
 
@@ -76,7 +76,7 @@ Bookings stay with Hospitable's own booking widget; a template can link to it.
 
 Set `HOSPITABLE_PAT` to exactly `dummy` and everything runs on the sample data in [`src/fixtures/dummy.json`](src/fixtures/dummy.json): two listed properties and one unlisted, a year of calendar that always starts today, reviews, Knowledge Hub topics and a host profile. Hospitable is never called, the cron does nothing, and every response carries `X-Hosp-Mode: dummy`.
 
-Open `https://<your-worker>/demo` to see ten widgets working, or load that address in any online iframe tester. The builder connects to a dummy Worker like any other, so you can walk through the whole flow without a Hospitable account.
+Open `https://<your-worker>/demo` to see all 16 widgets working, or load that address in any online iframe tester. The builder connects to a dummy Worker like any other, so you can walk through the whole flow without a Hospitable account.
 
 The sample data has the same shape as Hospitable's API:
 
@@ -86,7 +86,22 @@ The sample data has the same shape as Hospitable's API:
 
 ## Snippet and template syntax
 
-The builder writes the snippet for you. It contains:
+The builder writes the snippet for you: one element and one script.
+
+```html
+<div data-hosp="amenities"
+     data-hosp-worker="https://hospitable-widgets.you.workers.dev"
+     data-hosp-property="PROPERTY_ID"
+     data-hosp-data="property" data-hosp-modules=""
+     data-hosp-options="heading=Inside%20the%20villa"
+     data-hosp-style="accent=%23c2410c&font=dm-sans&headingFont=lora"
+     data-hosp-amenities-limit="8"></div>
+<script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer></script>
+```
+
+`data-hosp` names one of the starter templates in [`widget/templates/`](widget/templates/), which load from jsDelivr next to `widget.js`. `data-hosp-options` and `data-hosp-style` hold only what you changed from the template's defaults, URL-encoded. Template fixes therefore reach every website through jsDelivr, the same way `widget.js` fixes do.
+
+If you edit a widget's HTML in the builder, the snippet carries your HTML instead, in a `<template>` that `data-hosp-template` points to:
 
 ```html
 <template id="hosp-amenities-x7k2">
@@ -94,16 +109,11 @@ The builder writes the snippet for you. It contains:
   <h2>{property_name}</h2>
   <ul>{#amenities}<li>{.}</li>{/amenities}</ul>
 </template>
-<script type="application/json" id="hosp-amenities-x7k2-fallback">
-  {"property_name": "Relaxing Villa near the sea", "amenities": ["Shower", "Oven", "Wi-Fi"]}
-</script>
-<div data-hosp-template="hosp-amenities-x7k2"
-     data-hosp-worker="https://hospitable-widgets.you.workers.dev"
-     data-hosp-property="PROPERTY_ID"
-     data-hosp-data="property" data-hosp-modules=""
-     data-hosp-amenities-limit="8"></div>
+<div data-hosp-template="hosp-amenities-x7k2" data-hosp-worker="…" data-hosp-property="…"></div>
 <script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer></script>
 ```
+
+Each widget's last data stays in the visitor's browser. If the Worker can't be reached, a returning visitor sees that copy, and a first-time visitor sees a short "can't be shown right now" message. Snippets made before v1.1 carry a data snapshot in a `<script type="application/json">`, which still works.
 
 ### Template tags
 
@@ -139,6 +149,8 @@ Display choices go on the `<div>` as attributes. The data behind them is public 
 | `data-hosp-data="property,reviews"` | Data sets to fetch: `property`, `calendar`, `reviews`, `guide`, `host`, `properties`. |
 | `data-hosp-modules="reviews,pager"` | Modules to load: `calendar`, `reviews`, `lightbox`, `pager`. |
 | `data-hosp-eager` | Load right away instead of when the widget nears the screen. |
+| `data-hosp-options="key=value&…"` | Template options, for snippets that name a starter (`data-hosp`). |
+| `data-hosp-style="accent=%23c2410c&…"` | Colors (`accent`, `text`, `background`), fonts (`font`, `headingFont`), `radius`, `space` and `card` (`card-border`, `card-shadow` or empty). |
 
 ### Behaviors
 
@@ -149,20 +161,20 @@ A template can switch on two behaviors with attributes:
 
 ### What a page downloads
 
-Formatting is built into `widget.js`. Everything else is a module next to it, loaded only when a widget on the page uses it. Sizes as jsDelivr serves them, minified and compressed:
+Formatting is built into `widget.js`. Starter templates come through the `templates` module, and everything else is a module loaded only when a widget on the page uses it. JavaScript sizes as jsDelivr serves them, minified and compressed; each template file adds 1 to 3 KB:
 
 | Widget | JavaScript |
 | --- | --- |
-| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 5.3 KB: `widget.js` |
-| Photo gallery | 7.9 KB: + `lightbox` (viewer with filmstrip) |
-| Availability calendar | 7.3 KB: + `calendar`, `pager` |
-| Reviews carousel | 7.0 KB: + `reviews`, `pager` |
+| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 8.1 KB: `widget.js` + `templates` |
+| Photo gallery | 10.7 KB: + `lightbox` (viewer with filmstrip) |
+| Availability calendar | 10.1 KB: + `calendar`, `pager` |
+| Reviews carousel | 9.8 KB: + `reviews`, `pager` |
 
-`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules load from the same folder and the exact same version as `widget.js` (`@1` becomes `@1.0.0`), so a cached `widget.js` never meets newer modules. Widgets mount as they come within 400 px of the screen, so a widget nobody scrolls to costs no Worker request, and widgets that show the same property share one request.
+`npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules and templates load from the same folder and the exact same version as `widget.js` (`@1` becomes `@1.1.0`), so a cached `widget.js` never meets newer ones. Widgets mount as they come within 400 px of the screen, so a widget nobody scrolls to costs no Worker request, and widgets that show the same property share one request.
 
 ### Events and API
 
-Each render fires a `hosp:render` event on the element (`detail.state` is `live` or `snapshot`). For builders and tests, `window.HospWidgets` has `render`, `renderTo`, `derive`, `fetchData`, `need` and `scan`, plus `analyze` and `plan` once `need(['analyze'])` has loaded.
+Each render fires a `hosp:render` event on the element; `detail.state` is `live`, `cached` (the visitor's last copy) or `snapshot` (a pre-v1.1 snippet's own data), and `data-hosp-state` on the element says the same, or `unavailable`. For builders and tests, `window.HospWidgets` has `render`, `renderTo`, `derive`, `fetchData`, `need`, `module` and `scan`, plus `analyze` and `plan` once `need(['analyze'])` has loaded.
 
 ### Writing a module
 
@@ -176,6 +188,23 @@ HospWidgets.define('mymodule', ['calendar'], function (api) {
   };
 });
 ```
+
+### Starter templates
+
+Each file in [`widget/templates/`](widget/templates/) starts with a header that describes the widget and its options for the builder:
+
+```html
+<!--hw {"name":"Amenities","blurb":"…","height":480,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"What this place offers"},
+ {"key":"amenities-limit","label":"Show at most","type":"number","default":"10","target":"attr"}
+]} -->
+```
+
+- Options without a `target` go in `data-hosp-options` and are applied by the `templates` module: `[[key]]` inserts the value (escaped), `[[#key]]…[[/key]]` keeps a block when the option is on, `[[^key]]…[[/key]]` when it's off, and `[[#key=value]]…[[/key=value]]` when it equals a value. `[[card]]` is the card style.
+- Options with `"target":"attr"` become `data-hosp-<key>` display choices.
+- Option types: `text`, `textarea`, `url` (https only), `pattern` (a URL that may contain `{id}`), `number`, `select`, `toggle` and `reviews` (a review picker). A text option can name `tokens`, such as `{"count":"amenity_count"}`, so a host may type `{count}`.
+- The rest is the template syntax above. Inside tables, wrap tags in comments (`<!--{#rows}-->`), and never put a tag where an attribute name goes: the browser's HTML parser moves or splits them. Tests check both.
+- A new starter also needs an entry in the builder's widget catalog.
 
 ## Widget data reference
 
@@ -269,11 +298,11 @@ The deploy page asks for `HOSPITABLE_PAT`. Change it, or add the optional variab
 
 ## Limits and what happens when something fails
 
-On the free plan, one page view costs at most one Worker request per widget. `widget.js` and its modules come from jsDelivr and don't count.
+On the free plan, one page view costs at most one Worker request per widget, and a visitor's browser keeps the data for an hour, so their next page views within that hour cost nothing. `widget.js`, its modules and the templates come from jsDelivr and don't count. Cloudflare's CDN can't cache in front of a Worker, because a Worker always runs before the cache.
 
 | Free plan limit | Value | What this kit uses |
 | --- | --- | --- |
-| Worker requests | 100,000 / day | One per widget per page view, only once it nears the screen; widgets showing the same property share it |
+| Worker requests | 100,000 / day | One per widget per visitor per hour, only once it nears the screen; widgets showing the same property share it |
 | KV reads | 100,000 / day | Fewer than requests, thanks to the 60-second memory cache |
 | KV writes | 1,000 / day | Only when data actually changed, plus one status write per hour |
 | Subrequests | 50 per run | 1 list call, plus up to 4 calls per property (photos, calendar, reviews, guide) |
@@ -285,7 +314,7 @@ With every widget type in use, about 10 properties fit in one hourly run. Beyond
 | --- | --- |
 | Hospitable is down or rejects the token | The Worker keeps serving the last good data from KV and logs the error. |
 | The token expires (after a year) | Same, and the builder shows how to paste a new one. |
-| The Worker is unreachable, or the daily limit is hit (error 1027) | `widget.js` renders the snapshot saved in the snippet. |
+| The Worker is unreachable, or the daily limit is hit (error 1027) | Returning visitors see their browser's last copy; first-time visitors see a short message. Requests work again after the limit resets at 00:00 UTC. |
 | A property is unlisted | Its data is deleted on the next run and its endpoints return 404. |
 
 ## Updating your Worker
@@ -321,7 +350,8 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `src/demo.js` | The `/demo` page |
 | `src/store.js` | Memory cache, change detection, in-memory KV |
 | `widget/widget.js` | The script on the host's page: template engine, formatting, data, rendering, module loader |
-| `widget/modules/*.js` | Loaded on demand: `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |
+| `widget/modules/*.js` | Loaded on demand: `templates`, `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |
+| `widget/templates/*.html` | The 16 starter templates and their options (a `<!--hw {…} -->` header), plus `_base.css` |
 | `widget/sizes.json` | Download size of each file, written by `npm run size`, checked by CI |
 
 ### Releasing widget.js

@@ -1,0 +1,14 @@
+<!--hw {"name":"Also listed on","blurb":"Links to your listing on Airbnb, Vrbo and other channels","height":180,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Also listed on"},
+ {"key":"style","label":"Button style","type":"select","default":"ghost","choices":[["ghost","Outline"],["solid","Solid"]]}
+]} -->
+<style>
+.ch{display:flex;flex-wrap:wrap;gap:.6em;list-style:none;margin:0;padding:0}
+.ch .hw-btn{padding:.6em 1em}
+.ch svg{width:1em;height:1em}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <h2>[[heading]]</h2>
+  <ul class="ch">{#channels}<li><a class="hw-btn [[#style=ghost]]ghost[[/style=ghost]]" href="{url}" target="_blank" rel="noopener">{name}<svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></li>{/channels}</ul>
+</section>

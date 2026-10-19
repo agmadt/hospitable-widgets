@@ -1,0 +1,23 @@
+<!--hw {"name":"Meet your host","blurb":"Your name or company and profile picture","height":240,"options":[
+ {"key":"eyebrow","label":"Small label","type":"text","default":"Your host"},
+ {"key":"bio","label":"A few words about you (optional)","type":"textarea","default":""},
+ {"key":"button_text","label":"Button text (empty = no button)","type":"text","default":""},
+ {"key":"button_url","label":"Button link","type":"url","default":"https://"}
+]} -->
+<style>
+.mh{display:flex;align-items:center;gap:calc(var(--hw-space) * 1.2)}
+.mh-pic{width:88px;height:88px;border-radius:50%;object-fit:cover;flex:none;background:var(--hw-soft)}
+.mh-ini{width:88px;height:88px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--hw-soft);color:var(--hw-accent);font-size:2.2em;font-weight:700}
+.mh small{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:.72em;font-weight:700;color:var(--hw-accent)}
+.mh h2{margin:.1em 0 .2em}
+.mh-bio{margin-top:calc(var(--hw-space) * 1);white-space:pre-line}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="mh">
+    {#host_picture}<img class="mh-pic" src="{host_picture}" alt="{host_name}">{/host_picture}{^host_picture}<div class="mh-ini" aria-hidden="true">{host_initial}</div>{/host_picture}
+    <div><small>[[eyebrow]]</small><h2>{host_name}</h2></div>
+  </div>
+  [[#bio]]<p class="mh-bio">[[bio]]</p>[[/bio]]
+  [[#button_text]]<a class="hw-btn" href="[[button_url]]" target="_blank" rel="noopener">[[button_text]]</a>[[/button_text]]
+</section>
