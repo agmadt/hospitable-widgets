@@ -10,7 +10,8 @@ The widgets need a key to read your listings: an access token that you create in
 
 <p align="center"><img src="docs/how-it-works.svg" width="820" alt="Hospitable sends your listings, read only, once an hour to your Worker in your own Cloudflare account. Your Worker keeps your token safe, removes private details and never changes anything. Your website and your visitors get public information only and never see your token."></p>
 
-- Your token is kept in one place: a small program in your own Cloudflare account, which Cloudflare calls a Worker. It's saved there as a secret, and once it's saved Cloudflare hides it even from you. The builder, your website and your visitors never see it.
+- You paste your token in one place only: Cloudflare's own website, at `dash.cloudflare.com`. The Deploy to Cloudflare button takes you there, and later you can change the token there too. The builder has no field for it.
+- Cloudflare keeps the token in a small program in your own Cloudflare account, which Cloudflare calls a Worker. It's saved there as a secret, and once it's saved Cloudflare hides it even from you. The builder, your website and your visitors never see it.
 - The token only needs Read permission, and your Worker only ever reads. It can't change a listing, touch a reservation or send a message.
 - Private details are removed before anything is saved: door codes, Wi-Fi passwords, your address, guests' last names and more. [Privacy](#privacy) has the full list.
 - Your token and your listing data stay in accounts you own. Your Worker runs in your Cloudflare account, and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a separate website: it never asks for your token, and it only reads what your Worker already shows the public.
@@ -31,8 +32,13 @@ the actual code, not only the README: everything in src/ and widget/,
 plus wrangler.jsonc, package.json and scripts/. Tell me which files you
 opened. If you can't open them, say so instead of guessing.
 
-The setup also uses a separate builder website whose code isn't part of
-this project. Tell me what that means for what you can check.
+How the setup works: I paste the token only on Cloudflare's own website
+(dash.cloudflare.com, where the "Deploy to Cloudflare" button takes me),
+or change it there later. The separate builder website has no token
+field and only reads the public data my Worker serves; its code isn't
+part of this project. Check this against the README's setup steps and
+the code, and if you find a place where the token goes anywhere else,
+quote the exact file and line.
 
 Then answer in plain language:
 
@@ -94,7 +100,7 @@ The easiest way is to follow the [builder](https://hospitable-widget.adhityoagam
 
 1. Open the [builder](https://hospitable-widget.adhityoagam.com/) and pick a widget, then its colors, fonts and layout. You can do this before anything else: it uses sample data until you connect. Your design is saved in your browser.
 2. In Hospitable, go to Apps → API access → Access tokens. Add a token with Read permission and copy it. A token lasts one year.
-3. Click [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/agmadt/hospitable-widgets) (the builder has the same button). Sign in to Cloudflare and GitHub, paste your token into the `HOSPITABLE_PAT` box and click Deploy. Cloudflare sets up your Worker, including the hourly refresh.
+3. Click [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/agmadt/hospitable-widgets) here or in the builder. It takes you to Cloudflare's own website, at `dash.cloudflare.com`. Sign in to Cloudflare and GitHub there, paste your token into the field named `HOSPITABLE_PAT` on that page and click Deploy. Cloudflare sets up your Worker, including the hourly refresh.
 4. When Cloudflare is done, click your Worker's address. It looks like `https://hospitable-widgets.<your-name>.workers.dev`, and you'll find it on the success page and in your Cloudflare dashboard. It opens the builder already connected, and the builder tab you were using connects too.
 5. Pick one of your properties. The preview now shows your real listing.
 6. Copy the snippet and paste it into your website. The builder shows how for Wix, Squarespace, WordPress, Webflow and other sites.
@@ -151,7 +157,7 @@ For your visitors:
 
 ## Settings
 
-Change these in Cloudflare under Workers & Pages → hospitable-widgets → Settings → Variables and Secrets. The deploy page only asks for `HOSPITABLE_PAT`; add the others whenever you need them. They stay in place when your Worker is updated.
+Change these in Cloudflare under Workers & Pages → hospitable-widgets → Settings → Variables and Secrets. On the deploy page you only fill in `HOSPITABLE_PAT` and leave the other fields as they are; add the others here whenever you need them. They stay in place when your Worker is updated.
 
 | Name | What it does | If you leave it out |
 | --- | --- | --- |
