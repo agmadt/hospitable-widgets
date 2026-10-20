@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="290" viewBox="0 0 880 290" role="img" aria-labelledby="t d">
+  <title id="t">Where your data goes</title>
+  <desc id="d">Your Worker, in your own Cloudflare account, reads your listings from Hospitable once an hour, keeps your token safe, removes private details, and gives your website public listing information only.</desc>
+  <style>
+    text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #1c1917; }
+    .title { font-size: 19px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #78716c; }
+    .line { font-size: 14px; }
+    .label { font-size: 12px; fill: #57534e; font-weight: 600; }
+    .tick { fill: none; stroke: #0f766e; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .dot { fill: #a8a29e; }
+    .arrow { stroke: #0f766e; stroke-width: 2.5; fill: none; }
+  </style>
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="1" y="1" width="878" height="288" rx="18" fill="#ffffff" stroke="#e7e5e4" stroke-width="2"/>
+
+  <!-- Hospitable -->
+  <rect x="24" y="40" width="230" height="210" rx="14" fill="#f5f5f4" stroke="#e7e5e4" stroke-width="1.5"/>
+  <text class="title" x="44" y="80">Hospitable</text>
+  <text class="sub" x="44" y="102">Where your listings live</text>
+  <circle class="dot" cx="48" cy="146" r="3"/><text class="line" x="60" y="151">Photos and prices</text>
+  <circle class="dot" cx="48" cy="178" r="3"/><text class="line" x="60" y="183">Calendar and reviews</text>
+  <circle class="dot" cx="48" cy="210" r="3"/><text class="line" x="60" y="215">House rules and more</text>
+
+  <!-- arrow 1 -->
+  <text class="label" x="289" y="130" text-anchor="middle">read only</text>
+  <text class="label" x="289" y="146" text-anchor="middle">every hour</text>
+  <path class="arrow" d="M258 162 H318" marker-end="url(#head)"/>
+
+  <!-- Your Worker -->
+  <rect x="325" y="40" width="230" height="210" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/>
+  <g transform="translate(513 60)" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="9" width="20" height="15" rx="3"/>
+    <path d="M4 9 V6 a6 6 0 0 1 12 0 V9"/>
+  </g>
+  <text class="title" x="345" y="80">Your Worker</text>
+  <text class="sub" x="345" y="102">In your own Cloudflare account</text>
+  <path class="tick" d="M345 146 l4 4 l8 -9"/><text class="line" x="364" y="151">Keeps your token safe</text>
+  <path class="tick" d="M345 178 l4 4 l8 -9"/><text class="line" x="364" y="183">Removes private details</text>
+  <path class="tick" d="M345 210 l4 4 l8 -9"/><text class="line" x="364" y="215">Reads, never changes</text>
+
+  <!-- arrow 2 -->
+  <text class="label" x="590" y="130" text-anchor="middle">public info</text>
+  <text class="label" x="590" y="146" text-anchor="middle">only</text>
+  <path class="arrow" d="M559 162 H619" marker-end="url(#head)"/>
+
+  <!-- Your website -->
+  <rect x="626" y="40" width="230" height="210" rx="14" fill="#f5f5f4" stroke="#e7e5e4" stroke-width="1.5"/>
+  <text class="title" x="646" y="80">Your website</text>
+  <text class="sub" x="646" y="102">And your visitors</text>
+  <path class="tick" d="M646 146 l4 4 l8 -9"/><text class="line" x="665" y="151">Shows your widgets</text>
+  <path class="tick" d="M646 178 l4 4 l8 -9"/><text class="line" x="665" y="183">Gets public info only</text>
+  <path class="tick" d="M646 210 l4 4 l8 -9"/><text class="line" x="665" y="215">Never sees your token</text>
+</svg>
