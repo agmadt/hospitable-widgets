@@ -15,11 +15,12 @@ const files = ['widget.min.js', 'sizes.json']
   .concat(readdirSync(new URL('templates/', dir)).map((f) => `templates/${f}`));
 
 async function get(url) {
-  // A freshly tagged file can fail while jsDelivr fetches and minifies it.
-  for (let attempt = 1; attempt <= 5; attempt++) {
+  // A freshly tagged file can fail while jsDelivr fetches and minifies it,
+  // sometimes for over a minute: retry for about three minutes.
+  for (let attempt = 1; attempt <= 9; attempt++) {
     const res = await fetch(url).catch(() => null);
     if (res?.ok) return res;
-    await new Promise((r) => setTimeout(r, attempt * 3000));
+    await new Promise((r) => setTimeout(r, attempt * 5000));
   }
   throw new Error(`jsDelivr did not serve ${url}`);
 }
