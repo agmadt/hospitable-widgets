@@ -24,16 +24,25 @@ The widgets need a key to read your listings: an access token that you create in
 Please check whether this open-source project is safe for me to use:
 https://github.com/agmadt/hospitable-widgets
 
-I'm a vacation rental host, not a programmer. Open the project and read the actual code, especially src/hospitable.js, src/normalize.js, src/index.js, src/listings.js and widget/widget.js. Then answer in plain language:
+I'm a vacation rental host, not a programmer. Open the project and read
+the actual code, especially src/hospitable.js, src/normalize.js,
+src/index.js, src/listings.js and widget/widget.js. Then answer in plain
+language:
 
-1. Where is my Hospitable access token kept? Could it ever reach my website, my visitors, the builder website or anyone else?
-2. Does the code only read from Hospitable, or can it change anything, such as listings, reservations, messages or payments?
-3. Which information about my properties becomes public? Is anything private included, such as door codes, Wi-Fi passwords, my address or guest details?
-4. Could the code I paste into my website harm my site or my visitors? Does it track visitors or set cookies?
+1. Where is my Hospitable access token kept? Could it ever reach my
+   website, my visitors, the builder website or anyone else?
+2. Does the code only read from Hospitable, or can it change anything,
+   such as listings, reservations, messages or payments?
+3. Which information about my properties becomes public? Is anything
+   private included, such as door codes, Wi-Fi passwords, my address or
+   guest details?
+4. Could the code I paste into my website harm my site or my visitors?
+   Does it track visitors or set cookies?
 5. Which outside services are involved, and what does each one receive?
 6. Could any of this cost me money?
 
-End with a short verdict: would you install it, and what should I watch out for?
+End with a short verdict: would you install it, and what should I watch
+out for?
 ```
 
 ## What you need
