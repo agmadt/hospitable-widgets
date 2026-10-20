@@ -441,7 +441,7 @@
   // ---------------------------------------------------------------------------
   // Data. Every widget of a property asks for the same URL, which folds in all
   // its data sets: widgets on a page share one request, and the browser's
-  // cache (one hour) serves it to the site's other pages and embeds.
+  // cache (the Worker's CACHE_MINUTES) serves it to the site's other pages and embeds.
   // ---------------------------------------------------------------------------
 
   var EVERYTHING = 'calendar,guide,host,reviews';

@@ -74,7 +74,7 @@ describe('routes', () => {
   it('serves public, cacheable JSON any website can read', async () => {
     const { res } = await json('/api/properties', dummyEnv);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=14400');
     expect(res.headers.get('X-Hosp-Mode')).toBe('dummy');
   });
 
@@ -84,7 +84,7 @@ describe('routes', () => {
     expect(await cache(' 90 ')).toBe('public, max-age=5400');
     expect(await cache('0')).toBe('no-store');
     expect(await cache('99999')).toBe('public, max-age=86400');
-    for (const value of ['', '  ', 'soon', undefined]) expect(await cache(value)).toBe('public, max-age=3600');
+    for (const value of ['', '  ', 'soon', undefined]) expect(await cache(value)).toBe('public, max-age=14400');
     const { body } = await json('/api/properties?for=builder', { ...dummyEnv, CACHE_MINUTES: '15' });
     expect(body.cache_minutes).toBe(15);
     expect((await json('/api/properties', dummyEnv)).body.cache_minutes).toBeUndefined();

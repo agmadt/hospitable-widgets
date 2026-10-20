@@ -23,11 +23,11 @@ function respond(body, status, env, extra = {}) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-/** CACHE_MINUTES: how long a visitor's browser may keep data. 60 by default, 0 for not at all, a day at most. */
+/** CACHE_MINUTES: how long a visitor's browser may keep data. 240 (4 hours) by default, 0 for not at all, a day at most. */
 export function cacheMinutes(env) {
   const raw = String(env.CACHE_MINUTES ?? '').trim();
   const n = raw === '' ? NaN : Number(raw);
-  return Number.isFinite(n) ? Math.min(1440, Math.max(0, Math.round(n))) : 60;
+  return Number.isFinite(n) ? Math.min(1440, Math.max(0, Math.round(n))) : 240;
 }
 
 function data(body, env, fresh) {
