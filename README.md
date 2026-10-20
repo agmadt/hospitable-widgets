@@ -32,18 +32,13 @@ the actual code, not only the README: everything in src/ and widget/,
 plus wrangler.jsonc, package.json and scripts/. Tell me which files you
 opened. If you can't open them, say so instead of guessing.
 
-How the setup works: I paste the token only on Cloudflare's own website
-(dash.cloudflare.com, where the "Deploy to Cloudflare" button takes me),
-or change it there later. The separate builder website has no token
-field and only reads the public data my Worker serves; its code isn't
-part of this project. Check this against the README's setup steps and
-the code, and if you find a place where the token goes anywhere else,
-quote the exact file and line.
+Then answer in plain language, and say which file and line each answer
+comes from:
 
-Then answer in plain language:
-
-1. Where is my Hospitable access token kept? Could it ever reach my
-   website, my visitors, the builder website or anyone else?
+1. Follow the setup steps in the README. Where exactly do I type my
+   Hospitable access token, and where does it go after that? Could it
+   ever reach my website, my visitors, the builder website or anyone
+   else?
 2. Does the code only read from Hospitable, or can it change anything,
    such as listings, reservations, messages or payments?
 3. Which information about my properties becomes public? Is anything
@@ -51,7 +46,8 @@ Then answer in plain language:
    address or guest details?
 4. Could the code I paste into my website harm my site or my visitors?
    Does it track visitors or set cookies? Who can change that code later?
-5. Which outside services are involved, and what does each one receive?
+5. Which outside services are involved, including the builder website,
+   and what does each one receive?
 6. Could any of this cost me money?
 
 End with a short verdict: would you install it, and what should I watch
