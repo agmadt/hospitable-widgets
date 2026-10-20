@@ -90,7 +90,7 @@ Display choices go on the `<div>` as attributes. The data behind them is public 
 | `data-hosp-modules="reviews,pager"` | Modules to load: `calendar`, `reviews`, `lightbox`, `pager`. |
 | `data-hosp-eager` | Load right away instead of when the widget nears the screen. |
 | `data-hosp-options="key=value&…"` | Template options, for snippets that name a starter (`data-hosp`). |
-| `data-hosp-style="accent=%23c2410c&…"` | Colors (`accent`, `text`, `background`), fonts (`font`, `headingFont`), `radius`, `space` and `card` (`card-border`, `card-shadow` or empty). |
+| `data-hosp-style="accent=%23c2410c&…"` | Colors (`accent`, `text`, `background`), fonts (`font`, `headingFont`: a key from the module's `FONTS`, `site` to leave the website's own font, or `google:Family Name` for any Google font), `radius`, `space` and `card` (`card-border`, `card-shadow` or empty). |
 
 ### Behaviors
 

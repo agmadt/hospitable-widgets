@@ -351,8 +351,9 @@ describe('size', () => {
     // As jsDelivr serves them: minified, then compressed.
     const size = async (src) => gzipSync((await minify(src)).code, { level: 9 }).length;
     expect(await size(widgetSource)).toBeLessThan(6.5 * 1024);
-    // The photo viewer, with its filmstrip, is the biggest module.
-    for (const m of MODULES) expect(await size(moduleSource[m]), m).toBeLessThan((m === 'lightbox' ? 3 : 2.5) * 1024);
+    // The photo viewer (with its filmstrip) and the templates module (with the
+    // font list and style rules) are the biggest modules.
+    for (const m of MODULES) expect(await size(moduleSource[m]), m).toBeLessThan((m === 'lightbox' || m === 'templates' ? 3 : 2.5) * 1024);
   });
 });
 

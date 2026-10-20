@@ -1,4 +1,4 @@
-/*! Hospitable Listing Widgets v1.1.2 | MIT | github.com/agmadt/hospitable-widgets */
+/*! Hospitable Listing Widgets v1.1.3 | MIT | github.com/agmadt/hospitable-widgets */
 // The core: finds each widget (data-hosp or data-hosp-template), fetches its data from
 // the host's Worker (one request per widget), fills the template and renders
 // it into a shadow root. Formatting is built in; calendar, reviews, the photo
@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.1.2';
+  var VERSION = '1.1.3';
 
   if (window.HospWidgets && window.HospWidgets.version) {
     // Loaded twice (two snippets on one page): reuse the first copy.

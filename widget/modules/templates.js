@@ -7,7 +7,10 @@
   if (!H) return;
 
   H.define('templates', [], function (api) {
+    // [label, font stack, Google Fonts family]. "site" sets no font, so the
+    // widget inherits the website's own (not inside an iframe, such as Wix's).
     var FONTS = {
+      site: ['Same as my website', null],
       system: ['System (matches most sites)', 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'],
       inter: ['Inter', 'Inter, ui-sans-serif, system-ui, sans-serif', 'Inter:wght@400;600;700'],
       'dm-sans': ['DM Sans', '"DM Sans", ui-sans-serif, system-ui, sans-serif', 'DM+Sans:wght@400;600;700'],
@@ -117,16 +120,29 @@
     }
 
     var COLOR = /^#[0-9a-f]{3,8}$/i;
+    // "google:Playfair Display": any Google font the host types in.
+    var GOOGLE = /^google:([A-Za-z0-9][A-Za-z0-9 ]{0,39})$/;
+
+    function fontOf(key) {
+      if (FONTS[key]) return FONTS[key];
+      var m = GOOGLE.exec(String(key || ''));
+      if (!m) return null;
+      var name = m[1].replace(/ +/g, ' ').trim();
+      // Only the regular weight: asking for weights a family lacks fails the whole request.
+      return [name, '"' + name + '", ui-sans-serif, system-ui, sans-serif', name.replace(/ /g, '+')];
+    }
 
     /** The --hw-* variables every starter template reads. */
     function styleCss(chosen) {
       var s = style(chosen);
-      var font = FONTS[s.font] || FONTS.system;
-      var heading = s.headingFont === 'same' ? font : FONTS[s.headingFont] || font;
+      var font = fontOf(s.font) || FONTS.system;
+      var heading = s.headingFont === 'same' ? font : fontOf(s.headingFont) || font;
       var color = function (v, fallback) { return COLOR.test(v) ? v : fallback; };
       var px = function (v, fallback) { var n = parseFloat(v); return isFinite(n) ? Math.max(0, Math.min(64, n)) + 'px' : fallback; };
+      // Without --hw-font, "font-family: var(--hw-font)" falls back to inheriting the page's font.
       return ':host{--hw-accent:' + color(s.accent, STYLE.accent) + ';--hw-text:' + color(s.text, STYLE.text) + ';--hw-bg:' + color(s.background, STYLE.background) +
-        ';--hw-font:' + font[1] + ';--hw-heading-font:' + heading[1] + ';--hw-radius:' + px(s.radius, '16px') + ';--hw-space:' + px(s.space, '16px') +
+        (font[1] ? ';--hw-font:' + font[1] : '') + (heading[1] ? ';--hw-heading-font:' + heading[1] : '') +
+        ';--hw-radius:' + px(s.radius, '16px') + ';--hw-space:' + px(s.space, '16px') +
         ';--hw-on-accent:' + onAccent(color(s.accent, STYLE.accent)) + '}';
     }
 
@@ -135,7 +151,7 @@
       var s = style(chosen);
       var fams = [];
       [s.font, s.headingFont].forEach(function (k) {
-        var f = FONTS[k];
+        var f = fontOf(k);
         if (f && f[2] && fams.indexOf(f[2]) === -1) fams.push(f[2]);
       });
       return fams.length ? 'https://fonts.googleapis.com/css2?' + fams.map(function (f) { return 'family=' + f; }).join('&') + '&display=swap' : '';
@@ -186,6 +202,7 @@
 
     return {
       FONTS: FONTS,
+      fontOf: fontOf,
       STYLE: STYLE,
       parse: parse,
       load: load,

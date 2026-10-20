@@ -90,6 +90,26 @@ describe('options and style', () => {
     expect(T.fontHref({})).toBe('');
   });
 
+  it("leaves the font to the website when asked, and only then", () => {
+    const css = T.styleCss({ font: 'site' });
+    expect(css).not.toContain('--hw-font');
+    expect(css).not.toContain('--hw-heading-font');
+    expect(T.styleCss({ font: 'site', headingFont: 'lora' })).toContain('--hw-heading-font:Lora, Georgia, serif');
+    expect(T.styleCss({ font: 'site', headingFont: 'lora' })).not.toContain('--hw-font:');
+    expect(T.fontHref({ font: 'site' })).toBe('');
+    // The default stays the system font, so existing snippets look the same.
+    expect(T.styleCss({})).toContain('--hw-font:ui-sans-serif');
+  });
+
+  it('loads a Google font the host types in, and refuses anything else', () => {
+    expect(T.styleCss({ font: 'google:Playfair Display' })).toContain('--hw-font:"Playfair Display", ui-sans-serif, system-ui, sans-serif');
+    expect(T.fontHref({ font: 'google:Playfair  Display', headingFont: 'google:Pacifico' })).toBe('https://fonts.googleapis.com/css2?family=Playfair+Display&family=Pacifico&display=swap');
+    for (const bad of ['google:x";}body{display:none', 'google:', 'google:<b>', 'google:' + 'a'.repeat(41)]) {
+      expect(T.styleCss({ font: bad })).toContain('--hw-font:ui-sans-serif');
+      expect(T.fontHref({ font: bad })).toBe('');
+    }
+  });
+
   it('round-trips snippet parameters', () => {
     const p = T.writeParams({ heading: 'Où dormir & plus', card: '' });
     expect(T.readParams(p)).toEqual({ heading: 'Où dormir & plus', card: '' });

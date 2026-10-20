@@ -149,7 +149,7 @@ For your visitors:
 - The widgets set no cookies and don't track anyone.
 - To show a widget, a visitor's browser connects to your Worker (for the listing), to jsDelivr (for the widget code), to the servers where Hospitable keeps your photos, and to Google Fonts if you picked a Google font.
 - The browser keeps a copy of the listing data, so the widget still shows if your Worker can't be reached.
-- If your guests are in the EU, pick the System or Georgia font in the builder. In 2022 a German court ruled that loading Google Fonts without visitors' consent breaks EU privacy law (GDPR).
+- If your guests are in the EU, pick "Same as my website", System or Georgia as the font in the builder. In 2022 a German court ruled that loading Google Fonts without visitors' consent breaks EU privacy law (GDPR).
 
 ## Settings
 
