@@ -59,7 +59,7 @@ Design each widget in the builder and copy its snippet. Where they go depends on
 Every widget of a property asks the Worker for the same URL, which holds all of that property's data: `/api/properties/:id?include=calendar,guide,host,reviews`. So:
 
 - One page with any number of widgets of a property makes one request for it.
-- The visitor's browser keeps the answer for an hour, so the site's other pages, and the other Wix embeds, can use it without asking the Worker again.
+- The visitor's browser keeps the answer for an hour (or what you set in `CACHE_MINUTES`), so the site's other pages, and the other Wix embeds, can use it without asking the Worker again.
 - The cost: a page with only a Description widget also downloads the property's calendar, reviews, guide and host. With the sample data that is about 4.5 KB compressed instead of 2 KB, and more for a listing with hundreds of reviews. Fewer Worker requests are worth more than those few kilobytes.
 
 The Property list widget reads a different endpoint (`/api/properties`), so it adds one request of its own.
@@ -308,16 +308,17 @@ The deploy page asks for `HOSPITABLE_PAT`. Change it, or add the optional variab
 | `HOSPITABLE_PAT` | secret | | Your token (Read permission), or `dummy` |
 | `PUBLIC_GUIDE_TOPICS` | variable | not set | Knowledge Hub topic names allowed in public, comma-separated, for example `Local attractions, Where to eat`. Not set (or blank) shows none. |
 | `BUILDER_URL` | variable | the builder | Where the Worker's home page sends you |
+| `CACHE_MINUTES` | variable | `60` | How long a visitor's browser keeps widget data, from `0` (not at all) to `1440` (a day). The cron refreshes data hourly, so a visitor may see data up to about one refresh plus this long old. Lower means visitors pick up a refresh sooner, at the cost of more Worker requests; higher means fewer requests. The builder shows the value your Worker uses. |
 | `SUBREQUEST_BUDGET` | variable | `45` | Hospitable calls per run; raise to `900` on the Workers Paid plan |
 | `WIDGET_URL` | variable | `/widget.js` | `widget.js` used by `/demo` |
 
 ## Limits and what happens when something fails
 
-On the free plan, one page view costs at most one Worker request per widget, and a visitor's browser keeps the data for an hour, so their next page views within that hour cost nothing. `widget.js`, its modules and the templates come from jsDelivr and don't count. Cloudflare's CDN can't cache in front of a Worker, because a Worker always runs before the cache.
+On the free plan, one page view costs at most one Worker request per property it shows, and a visitor's browser keeps the data for an hour (`CACHE_MINUTES`), so their next page views within that hour cost nothing. `widget.js`, its modules and the templates come from jsDelivr and don't count. Cloudflare's CDN can't cache in front of a Worker, because a Worker always runs before the cache.
 
 | Free plan limit | Value | What this kit uses |
 | --- | --- | --- |
-| Worker requests | 100,000 / day | One per property per visitor per hour, once a widget nears the screen; all widgets of that property share it, across pages |
+| Worker requests | 100,000 / day | One per property per visitor per hour (`CACHE_MINUTES`), once a widget nears the screen; all widgets of that property share it, across pages |
 | KV reads | 100,000 / day | Up to 7 per request when the 60-second memory cache is cold; under steady traffic most requests read none |
 | KV writes | 1,000 / day | Only when data actually changed, plus one status write per hour |
 | Subrequests | 50 per run | 1 list call, plus up to 4 calls per property (photos, calendar, reviews, guide) |

@@ -78,6 +78,18 @@ describe('routes', () => {
     expect(res.headers.get('X-Hosp-Mode')).toBe('dummy');
   });
 
+  it('lets CACHE_MINUTES set how long browsers keep data', async () => {
+    const cache = async (value) => (await get(`/api/properties/${VILLA}`, { ...dummyEnv, CACHE_MINUTES: value })).headers.get('Cache-Control');
+    expect(await cache('15')).toBe('public, max-age=900');
+    expect(await cache(' 90 ')).toBe('public, max-age=5400');
+    expect(await cache('0')).toBe('no-store');
+    expect(await cache('99999')).toBe('public, max-age=86400');
+    for (const value of ['', '  ', 'soon', undefined]) expect(await cache(value)).toBe('public, max-age=3600');
+    const { body } = await json('/api/properties?for=builder', { ...dummyEnv, CACHE_MINUTES: '15' });
+    expect(body.cache_minutes).toBe(15);
+    expect((await json('/api/properties', dummyEnv)).body.cache_minutes).toBeUndefined();
+  });
+
   it('returns 404 for unknown and unlisted properties', async () => {
     expect((await get('/api/properties/nope', dummyEnv)).status).toBe(404);
     expect((await get(`/api/properties/${HIDDEN}`, dummyEnv)).status).toBe(404);

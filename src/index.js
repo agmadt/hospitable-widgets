@@ -23,10 +23,17 @@ function respond(body, status, env, extra = {}) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
+/** CACHE_MINUTES: how long a visitor's browser may keep data. 60 by default, 0 for not at all, a day at most. */
+export function cacheMinutes(env) {
+  const raw = String(env.CACHE_MINUTES ?? '').trim();
+  const n = raw === '' ? NaN : Number(raw);
+  return Number.isFinite(n) ? Math.min(1440, Math.max(0, Math.round(n))) : 60;
+}
+
 function data(body, env, fresh) {
+  const minutes = cacheMinutes(env);
   return respond({ mode: isDummy(env) ? 'dummy' : 'live', ...body }, 200, env, {
-    // Data refreshes hourly, so a visitor's browser may keep it for an hour.
-    'Cache-Control': fresh ? 'no-store' : 'public, max-age=3600',
+    'Cache-Control': fresh || minutes === 0 ? 'no-store' : `public, max-age=${minutes * 60}`,
   });
 }
 
@@ -58,7 +65,9 @@ async function api(route, id, url, env, listings) {
     case 'list': {
       const list = await listings.list({ widget: !fresh });
       const status = fresh && listings.mode === 'live' ? publicStatus(await listings.status()) : undefined;
-      return data({ updated_at: list.updated_at, status, properties: list.properties }, env, fresh);
+      // The builder shows hosts how long visitors' browsers keep the data.
+      const cache_minutes = fresh ? cacheMinutes(env) : undefined;
+      return data({ updated_at: list.updated_at, status, cache_minutes, properties: list.properties }, env, fresh);
     }
     case 'property': {
       // ?include=calendar,reviews,guide,host folds the other data sets into this
