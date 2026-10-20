@@ -1,6 +1,8 @@
 // GET /demo: a page with sample widgets pointing at this Worker, for testing
 // in an online iframe tester or just a browser tab.
 
+export const RELEASED_WIDGET = 'https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js';
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // Each one is the short snippet the builder writes: a starter template by name.
@@ -34,7 +36,9 @@ export async function demoPage(url, env, makeListings) {
     problem = err.message;
   }
   const chosen = properties.find((p) => p.id === url.searchParams.get('property')) || properties[0];
-  const widgetSrc = String(env.WIDGET_URL || '').trim() || '/widget.js';
+  // The released widgets from jsDelivr, like hosts' websites: a copy made by
+  // the Deploy button never updates its own widget/ folder.
+  const widgetSrc = String(env.WIDGET_URL || '').trim() || RELEASED_WIDGET;
 
   const blocks = chosen
     ? WIDGETS.map(([type, name, attrs]) => `<section><h2 class="label">${esc(name)}</h2>

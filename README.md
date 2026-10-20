@@ -162,7 +162,7 @@ Change these in Cloudflare under Workers & Pages → hospitable-widgets → Sett
 | `CACHE_MINUTES` | How long a visitor's browser keeps widget data, from `0` (not at all) to `1440` (a day). Lower shows your changes to returning visitors sooner and uses more of your allowance. The builder shows the value your Worker uses. | `240` (4 hours) |
 | `SUBREQUEST_BUDGET` | How many calls to Hospitable one hourly refresh may make. Raise it to `900` on the Workers Paid plan. | `45` |
 | `BUILDER_URL` | Where your Worker's home page sends you. | This project's builder |
-| `WIDGET_URL` | The widget code your Worker's `/demo` page uses. | `/widget.js` |
+| `WIDGET_URL` | The widget code your Worker's `/demo` page uses. | The newest release, from jsDelivr |
 
 The hourly refresh isn't a setting here: its schedule lives in the `wrangler.jsonc` file. If you change it in the Cloudflare dashboard instead, the next update from GitHub puts it back to hourly.
 
@@ -180,13 +180,15 @@ Your Worker can also answer on an address of your own, such as `widgets.yourvill
 
 Most improvements are in the widget code, which your website loads from jsDelivr, so they reach your site without you doing anything.
 
-Improvements to your Worker take one more step. The Deploy button made a copy of this project in your GitHub account, and Cloudflare updates your Worker whenever that copy changes. To bring the copy up to date, run this on a computer with Git, or ask someone who uses Git to do it:
+Improvements to your Worker take one click on GitHub, once you've added an update button. The Deploy button made a copy of this project in your GitHub account, and Cloudflare updates your Worker whenever that copy changes.
 
-```sh
-git clone https://github.com/<you>/hospitable-widgets && cd hospitable-widgets
-git pull https://github.com/agmadt/hospitable-widgets main
-git push
-```
+To add the update button, once:
+
+1. On GitHub, open your copy. It has the same name as your Worker.
+2. Click Add file → Create new file and name the file `.github/workflows/update.yml`.
+3. Open [docs/update-workflow.yml](docs/update-workflow.yml) in this project, click its Copy raw file button, paste the text into your new file and click Commit changes.
+
+To update, whenever you like: open the Actions tab of your copy, choose Update from hospitable-widgets and click Run workflow. It copies in the newest release and keeps your Worker's name, its storage and the values you entered when deploying. Cloudflare then updates your Worker, its address stays the same, and the settings you added in the Cloudflare dashboard stay too. It only runs when you click it.
 
 ---
 

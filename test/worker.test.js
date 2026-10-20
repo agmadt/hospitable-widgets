@@ -213,7 +213,9 @@ describe('dummy mode', () => {
     expect(html).toContain('Sample data');
     expect(html).toContain(`data-hosp-worker="${ORIGIN}"`);
     expect(html).toContain(`data-hosp-property="${VILLA}"`);
-    expect(html).toContain('<script src="/widget.js" defer>');
+    // The released widgets by default, so a deployed copy's demo never goes stale.
+    expect(html).toContain('<script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer>');
+    expect(await (await get('/demo', { ...dummyEnv, WIDGET_URL: '/widget.js' })).text()).toContain('<script src="/widget.js" defer>');
     // One-line snippets, one per starter template.
     expect((html.match(/<div data-hosp="/g) || []).length).toBe(16);
     expect(html).not.toContain('<template');

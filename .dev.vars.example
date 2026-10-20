@@ -1,3 +1,5 @@
 # Your Hospitable Personal Access Token (Read access is enough).
 # Type dummy to run everything on sample data first.
 HOSPITABLE_PAT=dummy
+# /demo uses the released widgets unless told otherwise; in development, use this checkout's.
+WIDGET_URL=/widget.js

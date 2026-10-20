@@ -264,6 +264,11 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `widget/templates/*.html` | The 16 starter templates and their options (a `<!--hw {…} -->` header), plus `_base.css` |
 | `widget/sizes.json` | Download size of each file, written by `npm run size`, checked by CI |
 | `scripts/warm.mjs` | Run by the Release workflow on each tag: warms jsDelivr and purges `@1` |
+| `scripts/update-copy.mjs`, `docs/update-workflow.yml` | The update button hosts add to their copy |
+
+### Updating hosts' copies
+
+The Deploy button gives each host a one-commit copy of the repository, so `git pull` from here can't work (no shared history), and the copy's `wrangler.jsonc` holds what Cloudflare wrote on deploy: the Worker's name, the KV namespace id and the deploy-page values. [`docs/update-workflow.yml`](update-workflow.yml), which hosts add once to their copy (Cloudflare doesn't copy `.github/`), downloads the newest release tag and runs [`scripts/update-copy.mjs`](../scripts/update-copy.mjs): it replaces everything except `.git` and `.github` with the release, then puts the copy's name, KV id and `vars` values back into the release's `wrangler.jsonc` and the name into `package.json`. Running it twice changes nothing. Worker changes reach hosts only through a tag.
 
 ### Releasing widget.js
 
