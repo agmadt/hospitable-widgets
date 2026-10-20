@@ -81,8 +81,10 @@ function money(value, currency) {
   return Math.round((amount / minorUnits(currency)) * 100) / 100;
 }
 
+// The internal name (raw.name) often holds owner names, unit codes or notes,
+// so a property without a public name is shown as "Untitled listing".
 function publicName(raw) {
-  return str(raw.public_name) || str(raw.name) || 'Untitled listing';
+  return str(raw.public_name) || 'Untitled listing';
 }
 
 function rooms(raw) {

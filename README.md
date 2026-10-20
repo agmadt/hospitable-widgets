@@ -13,9 +13,11 @@ The widgets need a key to read your listings: an access token that you create in
 - Your token is kept in one place: a small program in your own Cloudflare account, which Cloudflare calls a Worker. It's saved there as a secret, and once it's saved Cloudflare hides it even from you. The builder, your website and your visitors never see it.
 - The token only needs Read permission, and your Worker only ever reads. It can't change a listing, touch a reservation or send a message.
 - Private details are removed before anything is saved: door codes, Wi-Fi passwords, your address, guests' last names and more. [Privacy](#privacy) has the full list.
-- Everything runs in accounts you own. Your Worker runs in your Cloudflare account and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a web page that runs in your browser and talks to your Worker directly.
+- Your token and your listing data stay in accounts you own. Your Worker runs in your Cloudflare account, and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a separate website: it never asks for your token, and it only reads what your Worker already shows the public.
 - Your website stays as it is. Each widget draws inside its own sealed box on the page, so its design can't spill onto the rest of your site, and your site's design can't break the widget.
-- The code is open. Anyone can read every line of it here on GitHub.
+- The code of your Worker and of the widgets is open. Anyone can read every line of it here on GitHub.
+- The widget code on your website comes from this project, delivered by jsDelivr, and updates itself to each new 1.x version. If you'd rather decide when it changes, replace `@1` in your snippet with an exact version, such as `@1.1.2`.
+- As with any account that holds a key, turn on two-step login for your Cloudflare, GitHub and Hospitable accounts.
 
 > [!TIP]
 > Don't take our word for it. Copy the prompt below, paste it into ChatGPT or Claude, and ask for its opinion. Use a version that can browse the web, so it can open the code.
@@ -25,19 +27,24 @@ Please check whether this open-source project is safe for me to use:
 https://github.com/agmadt/hospitable-widgets
 
 I'm a vacation rental host, not a programmer. Open the project and read
-the actual code, especially src/hospitable.js, src/normalize.js,
-src/index.js, src/listings.js and widget/widget.js. Then answer in plain
-language:
+the actual code, not only the README: everything in src/ and widget/,
+plus wrangler.jsonc, package.json and scripts/. Tell me which files you
+opened. If you can't open them, say so instead of guessing.
+
+The setup also uses a separate builder website whose code isn't part of
+this project. Tell me what that means for what you can check.
+
+Then answer in plain language:
 
 1. Where is my Hospitable access token kept? Could it ever reach my
    website, my visitors, the builder website or anyone else?
 2. Does the code only read from Hospitable, or can it change anything,
    such as listings, reservations, messages or payments?
 3. Which information about my properties becomes public? Is anything
-   private included, such as door codes, Wi-Fi passwords, my address or
-   guest details?
+   private included, such as door codes, Wi-Fi passwords, my street
+   address or guest details?
 4. Could the code I paste into my website harm my site or my visitors?
-   Does it track visitors or set cookies?
+   Does it track visitors or set cookies? Who can change that code later?
 5. Which outside services are involved, and what does each one receive?
 6. Could any of this cost me money?
 
@@ -63,7 +70,7 @@ Bookings themselves happen in Hospitable, which always has the current calendar.
 
 For most hosts, nothing.
 
-Cloudflare's free plan allows 100,000 requests a day. A visitor uses one request per property, and their browser then reuses it for 4 hours, however many pages and widgets they look at. That's room for roughly 100,000 different visitors a day, and every Cloudflare account has its own allowance. The widget code itself comes free from jsDelivr, a public service for open-source code, and doesn't count.
+Cloudflare's free plan allows 100,000 requests a day. A visitor uses one request per property, and their browser then reuses it for 4 hours, however many pages and widgets they look at. The free plan also allows 100,000 reads from storage a day, and one request needs up to 7 of them when your Worker hasn't just read the same data. Together that's room for at least 14,000 different visitors a day, and usually far more. Every Cloudflare account has its own allowance. The widget code itself comes free from jsDelivr, a public service for open-source code, and doesn't count.
 
 If you ever go over, you aren't charged. Your widgets pause until the allowance resets at midnight UTC: returning visitors still see the copy saved in their browser, and new visitors see a short "can't be shown right now" message.
 
@@ -74,6 +81,7 @@ For more traffic, Cloudflare's Workers Paid plan costs $5 a month and includes 1
 A few things in Hospitable and on your website decide what the widgets can show:
 
 - Your properties are listed in Hospitable. Unlisted properties are left out.
+- Each property has a public name in Hospitable. Your internal property names are never shown, so a property without a public name appears as "Untitled listing".
 - Your photos are turned on for the Direct channel (in Hospitable, Property → Details). If they aren't, the gallery only shows the cover photo.
 - Your website can run JavaScript inside an embed or code block: a Wix Embed HTML element, a Squarespace Code block, a WordPress Custom HTML block, a Webflow Code Embed, or any page whose HTML you control.
 - The Local guide widget only shows the Knowledge Hub topics you choose in `PUBLIC_GUIDE_TOPICS` (see [Settings](#settings)). Until you choose some, it stays empty, because those topics often contain door codes.
@@ -122,15 +130,24 @@ Anyone who knows your Worker's address can read what it hands out, just as anyon
 - iCal import and export links, and calendar notes
 - private review feedback, detailed review comments and guests' last names
 - your email, billing address and tax details, listing emails, and internal property names and tags
-- anything from reservations, guests, messages, transactions or payouts (your Worker never even asks Hospitable for those)
+- anything from reservations, guests, messages, transactions or payouts
+
+Your Worker never asks Hospitable for reservations, messages, transactions or payouts. Reviews do arrive with some guest details, such as last names, and your Worker throws those away before saving anything.
 
 Knowledge Hub topics often hold door codes, so your Worker shares none of them until you name the safe ones in `PUBLIC_GUIDE_TOPICS`.
+
+What does become public, so check it once:
+
+- All your listed properties, not only the ones on your website. Open `https://<your-worker>/demo` to see everything your Worker shares.
+- Your own texts, word for word. If a description, a house rule or a photo caption mentions a door code or your street address, that becomes public too.
+- Your name (or your company's name, if your Hospitable account is a business) and your profile photo. They come with every property's data, even if you don't use the Meet your host widget.
 
 For your visitors:
 
 - The widgets set no cookies and don't track anyone.
 - To show a widget, a visitor's browser connects to your Worker (for the listing), to jsDelivr (for the widget code), to the servers where Hospitable keeps your photos, and to Google Fonts if you picked a Google font.
 - The browser keeps a copy of the listing data, so the widget still shows if your Worker can't be reached.
+- If your guests are in the EU, pick the System or Georgia font in the builder. In 2022 a German court ruled that loading Google Fonts without visitors' consent breaks EU privacy law (GDPR).
 
 ## Settings
 

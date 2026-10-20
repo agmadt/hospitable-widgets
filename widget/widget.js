@@ -1,4 +1,4 @@
-/*! Hospitable Listing Widgets v1.1.1 | MIT | github.com/agmadt/hospitable-widgets */
+/*! Hospitable Listing Widgets v1.1.2 | MIT | github.com/agmadt/hospitable-widgets */
 // The core: finds each widget (data-hosp or data-hosp-template), fetches its data from
 // the host's Worker (one request per widget), fills the template and renders
 // it into a shadow root. Formatting is built in; calendar, reviews, the photo
@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.1.1';
+  var VERSION = '1.1.2';
 
   if (window.HospWidgets && window.HospWidgets.version) {
     // Loaded twice (two snippets on one page): reuse the first copy.
@@ -139,7 +139,9 @@
       } else if (node.type === 'var') {
         var text = toText(lookup(stack, node.name));
         // A value that is a link may only be https, mailto: or tel: (no javascript:, data:, http:).
-        if (/^[a-z][a-z0-9+.\-]*:\S*$/i.test(text) && !/^(https|mailto|tel):/i.test(text)) text = '';
+        // Browsers ignore leading spaces and any tab or line break in a link, so check it that way too.
+        var link = text.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, '');
+        if (/^(javascript|vbscript|data):/i.test(link) || (/^[a-z][a-z0-9+.\-]*:\S*$/i.test(link) && !/^(https|mailto|tel):/i.test(link))) text = '';
         out += escapeHTML(text);
       } else if (node.type === 'section') {
         var value = lookup(stack, node.name);

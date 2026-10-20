@@ -269,9 +269,10 @@ describe('rendering into the page', () => {
         photos: [{ url: 'javascript:alert(1)' }, { url: 'http://insecure.example/a.jpg' }, { url: 'data:text/html,x' }, { url: 'https://ok.example/b.jpg' }],
         link: 'javascript:alert(2)',
         note: 'Check-in: from 3 pm',
+        sneaky: ['javascript: alert(3)', 'java\tscript:alert(4)', ' javascript:alert(5)', 'JaVaScRiPt:alert(6)', '\njavascript:alert(7)', 'vbscript:x', 'data: text/html,x'],
       },
     });
-    const el = snippet({ template: '{#photos}<img src="{url}">{/photos}<a href="{link}">x</a><p>{note}</p><script>window.pwned=1</script>' });
+    const el = snippet({ template: '{#photos}<img src="{url}">{/photos}<a href="{link}">x</a><p>{note}</p>{#sneaky}<a class="s" href="{.}">s</a>{/sneaky}<script>window.pwned=1</script>' });
     await W.scan();
     const imgs = [...el.shadowRoot.querySelectorAll('img')];
     // Refused links come out empty, and empty images are hidden by the base style.
@@ -279,6 +280,8 @@ describe('rendering into the page', () => {
     expect(el.shadowRoot.querySelector('style').textContent).toContain('img[src=""]');
     expect(el.shadowRoot.querySelector('a').getAttribute('href')).toBe('');
     expect(el.shadowRoot.querySelector('p').textContent).toBe('Check-in: from 3 pm'); // ordinary text with a colon stays
+    // Spaces, tabs, line breaks and odd case don't sneak a javascript: link through.
+    expect([...el.shadowRoot.querySelectorAll('a.s')].map((a) => a.getAttribute('href'))).toEqual(['', '', '', '', '', '', '']);
     expect(window.pwned).toBeUndefined();
   });
 

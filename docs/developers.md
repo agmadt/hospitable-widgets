@@ -51,6 +51,8 @@ If you edit a widget's HTML in the builder, the snippet carries your HTML instea
 <script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer></script>
 ```
 
+A snippet can pin an exact release instead of `@1`, for example `…/hospitable-widgets@1.1.2/widget/widget.min.js`; `widget.js` then loads its modules and templates from that same release, so nothing on the page changes until the host edits the snippet.
+
 `widget.js` keeps each property's last data in the visitor's browser (localStorage). If the Worker can't be reached, a returning visitor sees that copy and a first-time visitor sees a short "can't be shown right now" message. Snippets made before v1.1 carry a data snapshot in a `<script type="application/json">`, which still works.
 
 ### Template tags
@@ -65,7 +67,7 @@ If you edit a widget's HTML in the builder, the snippet carries your HTML instea
 | `{#list.0}…{/list.0}` | Shows once when a list has items (a heading above a list, say). |
 | `<!--{#rows}-->` | A tag may sit in an HTML comment. Use this between table rows, where the browser would otherwise move the text out of the table. |
 
-`data-hosp-data` and `data-hosp-modules` say what the widget needs, and `widget.js` fetches exactly that: a page with only an Amenities widget never downloads a year of calendar or the calendar code. The builder writes both attributes. If a hand-written snippet leaves them out, `widget.js` loads `modules/analyze.js` to work them out from the fields the template uses.
+`data-hosp-data` and `data-hosp-modules` say what the widget needs. `data-hosp-data` picks the endpoint: every per-property widget fetches the same full URL (`?include=calendar,guide,host,reviews`), so widgets of a property share one request and one browser-cached copy, while `host` alone (without a property) and `properties` have endpoints of their own. `data-hosp-modules` picks the code: a page with only an Amenities widget never downloads the calendar module. The builder writes both attributes. If a hand-written snippet leaves them out, `widget.js` loads `modules/analyze.js` to work them out from the fields the template uses.
 
 ### Display choices
 
@@ -228,7 +230,7 @@ The sample data has the same shape as Hospitable's API:
 | Free plan limit | Value | What this kit uses |
 | --- | --- | --- |
 | Worker requests | 100,000 / day | One per property per visitor every 4 hours (`CACHE_MINUTES`), once a widget nears the screen; all widgets of that property share it, across pages |
-| KV reads | 100,000 / day | Up to 7 per request when the 60-second memory cache is cold; under steady traffic most requests read none |
+| KV reads | 100,000 / day | Up to 7 per request when the 60-second memory cache is cold (list, property, photos, calendar, reviews, guide, host; concurrent reads of one key share a KV read); under steady traffic most requests read none. The free ceiling is therefore at least about 14,000 cold requests a day. |
 | KV writes | 1,000 / day | Only when data actually changed, plus one status write per hour |
 | Subrequests | 50 per run | 1 list call, plus up to 4 calls per property (photos, calendar, reviews, guide) |
 | Cron triggers | 5 per account | 1 |

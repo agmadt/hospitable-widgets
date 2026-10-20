@@ -42,10 +42,21 @@ export function fingerprint(value) {
 export async function read(kv, key) {
   const hit = memoryGet(key);
   if (hit) return hit.value;
-  const { value, metadata } = await kv.getWithMetadata(key, 'json');
-  if (value != null) memorySet(key, value, metadata?.h);
-  return value ?? null;
+  // Reads of the same key at the same time (a request's data sets all check
+  // the property list) share one KV read: the free plan allows 100,000 a day.
+  let pending = inflight.get(key);
+  if (!pending) {
+    pending = kv.getWithMetadata(key, 'json').then(({ value, metadata }) => {
+      if (value != null) memorySet(key, value, metadata?.h);
+      return value ?? null;
+    });
+    inflight.set(key, pending);
+    pending.finally(() => inflight.delete(key)).catch(() => {});
+  }
+  return pending;
 }
+
+const inflight = new Map();
 
 /**
  * Writes data as {...data, updated_at} unless it is unchanged.

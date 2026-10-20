@@ -259,6 +259,24 @@ describe('live mode', () => {
     expect(JSON.stringify(body)).not.toContain(PAT);
   });
 
+  it('shows "Untitled listing", never the internal name, for a property without a public name', async () => {
+    const { property } = await import('../src/normalize.js');
+    expect(property({ id: 'p', name: 'Villa 3 - owner Budi - code 4471', public_name: '' }).property_name).toBe('Untitled listing');
+    expect(property({ id: 'p', name: 'Internal', public_name: 'Sea view villa' }).property_name).toBe('Sea view villa');
+  });
+
+  it('reads the property list from KV once for all the data sets of a request', async () => {
+    hospitable();
+    const env = liveEnv();
+    await get(`/api/properties/${VILLA}?include=calendar,guide,host,reviews`, env);
+    clearMemory(); // a cold isolate: everything is in KV now
+    env.LISTINGS.reads = 0;
+    const { res } = await json(`/api/properties/${VILLA}?include=calendar,guide,host,reviews`, env);
+    expect(res.status).toBe(200);
+    // list, property, photos, calendar, reviews, guide, host
+    expect(env.LISTINGS.reads).toBe(7);
+  });
+
   it('does not call Hospitable for property IDs it does not know', async () => {
     const { calls } = hospitable();
     const env = liveEnv();
