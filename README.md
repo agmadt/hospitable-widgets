@@ -86,7 +86,7 @@ A few things in Hospitable and on your website decide what the widgets can show:
 - Your website can run JavaScript inside an embed or code block: a Wix Embed HTML element, a Squarespace Code block, a WordPress Custom HTML block, a Webflow Code Embed, or any page whose HTML you control.
 - The Local guide widget only shows the Knowledge Hub topics you choose in `PUBLIC_GUIDE_TOPICS` (see [Settings](#settings)). Until you choose some, it stays empty, because those topics often contain door codes.
 - On the free plan, up to about 10 properties refresh every hour. With more, they take turns, and each one still refreshes several times a day. From about 40 properties, use the Workers Paid plan and set `SUBREQUEST_BUDGET` to `900`.
-- Your visitors can open `workers.dev` addresses. Some internet providers block all of them (XL in Indonesia, for one). If many of your guests use such a provider, give your Worker an address on your own domain, managed in Cloudflare: see [Your own domain](#your-own-domain).
+- Your visitors can open `workers.dev` addresses. Some internet providers block them. If many of your guests use such a provider, give your Worker an address on your own domain, managed in Cloudflare: see [Your own domain](#your-own-domain).
 
 ## Set it up
 
@@ -115,7 +115,7 @@ More widgets don't cost more. All widgets of the same property share one request
 | What you see | What to do |
 | --- | --- |
 | The gallery only shows the cover photo | Turn your photos on for the Direct channel in Hospitable, under Property → Details. |
-| Right after your first deploy, your Worker's address shows a security error, such as `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` | On a new Cloudflare account, Cloudflare needs time to prepare the security certificate for your `workers.dev` address. In one test it took more than half an hour. Wait, then open the address again. |
+| Right after your first deploy, your Worker's address shows a security error, such as `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` | On a new Cloudflare account, Cloudflare needs time to prepare the security certificate for your `workers.dev` address. This can take more than half an hour. Wait, then open the address again. |
 | Your Worker's address doesn't open at all, for you or for some visitors | Your internet provider may block `workers.dev` addresses. Give your Worker [your own domain](#your-own-domain). |
 | The Local guide widget is empty | Choose the topics it may show in `PUBLIC_GUIDE_TOPICS` (see [Settings](#settings)). |
 | The builder says Hospitable rejected your token | Tokens expire after a year. Create a new one in Hospitable and replace `HOSPITABLE_PAT` (see [Settings](#settings)). |
