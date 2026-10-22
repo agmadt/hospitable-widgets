@@ -128,6 +128,7 @@ More widgets don't cost more. All widgets of the same property share one request
 | Your Worker's address doesn't open at all, for you or for some visitors | Your internet provider may block `workers.dev` addresses. Give your Worker [your own domain](#your-own-domain). |
 | The Local guide widget is empty | Choose the topics it may show in `PUBLIC_GUIDE_TOPICS` (see [Settings](#settings)). |
 | The builder says Hospitable rejected your token | Tokens expire after a year. Create a new one in Hospitable and replace `HOSPITABLE_PAT` (see [Settings](#settings)). |
+| A widget doesn't appear on your website, or looks wrong | Paste its snippet into the [Embed Code Tester](https://webdevutility.com/embed-code-tester/), or click Check it in the Embed Code Tester in the builder's Copy step. It runs the snippet and lists everything it loads and whether anything fails. |
 | A widget says "This content can't be shown right now" | Your Worker couldn't be reached, or the day's free allowance is used up. Check that your Worker's address opens. A used-up allowance comes back at midnight UTC. |
 
 ## Privacy
@@ -147,7 +148,7 @@ Knowledge Hub topics often hold door codes, so your Worker shares none of them u
 
 What does become public, so check it once:
 
-- All your listed properties, not only the ones on your website. Open `https://<your-worker>/demo` to see everything your Worker shares.
+- All your listed properties, not only the ones on your website. Open `https://<your-worker>/api/properties` in your browser to see the list your Worker shares; the builder shows each property's details.
 - Your own texts, word for word. If a description, a house rule or a photo caption mentions a door code or your street address, that becomes public too.
 - Your name (or your company's name, if your Hospitable account is a business) and your profile photo. They come with every property's data, even if you don't use the Meet your host widget.
 
@@ -169,11 +170,10 @@ Change these in Cloudflare under Workers & Pages → hospitable-widgets → Sett
 | `CACHE_MINUTES` | How long a visitor's browser keeps widget data, from `0` (not at all) to `1440` (a day). Lower shows your changes to returning visitors sooner and uses more of your allowance. The builder shows the value your Worker uses. | `240` (4 hours) |
 | `SUBREQUEST_BUDGET` | How many calls to Hospitable one hourly refresh may make. Raise it to `900` on the Workers Paid plan. | `45` |
 | `BUILDER_URL` | Where your Worker's home page sends you. If you [run your own builder](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder), change it in `wrangler.jsonc` in your copy on GitHub rather than here, so updates keep it. | This project's builder |
-| `WIDGET_URL` | The widget code your Worker's `/demo` page uses. | The newest release, from jsDelivr |
 
 The hourly refresh isn't a setting here: its schedule lives in the `wrangler.jsonc` file. If you change it in the Cloudflare dashboard instead, the next update from GitHub puts it back to hourly.
 
-With `HOSPITABLE_PAT` set to `dummy`, your Worker runs on sample data and never contacts Hospitable. Open `https://<your-worker>/demo` to see all 16 widgets, or connect the builder to try every step.
+With `HOSPITABLE_PAT` set to `dummy`, your Worker runs on sample data and never contacts Hospitable. Connect the builder to it to try every step.
 
 ### Your own domain
 

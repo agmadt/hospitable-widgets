@@ -215,7 +215,7 @@ Every response also has `mode` (`live` or `dummy`) and `updated_at`. Unknown and
 
 ## Sample data
 
-With `HOSPITABLE_PAT` set to exactly `dummy`, everything runs on [`src/fixtures/dummy.json`](../src/fixtures/dummy.json). Hospitable is never called, the cron does nothing, and every response carries `X-Hosp-Mode: dummy`. `/demo` shows all 16 starters as one-line snippets; it also works in any online iframe tester.
+With `HOSPITABLE_PAT` set to exactly `dummy`, everything runs on [`src/fixtures/dummy.json`](../src/fixtures/dummy.json). Hospitable is never called, the cron does nothing, and every response carries `X-Hosp-Mode: dummy`. To see widgets run on it, connect the builder, or paste a snippet into the [Embed Code Tester](https://webdevutility.com/embed-code-tester/).
 
 The sample data has the same shape as Hospitable's API:
 
@@ -242,7 +242,7 @@ With every widget type in use, about 10 properties fit in one hourly run. Beyond
 ```sh
 npm install
 cp .dev.vars.example .dev.vars   # HOSPITABLE_PAT=dummy
-npm run dev                      # http://127.0.0.1:8787/demo
+npm run dev                      # http://127.0.0.1:8787/api/properties
 npm test                         # Worker (dummy and live, with a fake Hospitable) and widget.js (happy-dom)
 npm run size                     # download size of widget.js and each module
 ```
@@ -257,7 +257,6 @@ Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/schedul
 | `src/normalize.js` | API responses → public widget data (the allowlist) |
 | `src/amenities.js` | Readable labels for amenity codes |
 | `src/dummy.js`, `src/fixtures/dummy.json` | Dummy mode |
-| `src/demo.js` | The `/demo` page |
 | `src/store.js` | Memory cache, change detection, in-memory KV |
 | `widget/widget.js` | The script on the host's page: template engine, formatting, data, rendering, module loader |
 | `widget/modules/*.js` | Loaded on demand: `templates`, `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |

@@ -3,7 +3,6 @@
 // public listing data.
 
 import { Listings, NotFound, Unavailable, isDummy } from './listings.js';
-import { demoPage } from './demo.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -123,16 +122,10 @@ export default {
 
     if (path === '/') {
       const builder = String(env.BUILDER_URL || '').trim();
-      if (!builder) return new Response('Hospitable Widgets Worker is running. Open /demo to see it work.', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      if (!builder) return new Response('Hospitable Widgets Worker is running.', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
       const target = new URL(builder);
       target.searchParams.set('worker', url.origin);
       return Response.redirect(target.toString(), 302);
-    }
-
-    if (path === '/demo') {
-      return new Response(await demoPage(url, env, (e) => new Listings(e)), {
-        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Hosp-Mode': isDummy(env) ? 'dummy' : 'live' },
-      });
     }
 
     for (const [pattern, route] of ROUTES) {

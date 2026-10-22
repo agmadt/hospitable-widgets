@@ -335,6 +335,30 @@ describe('rendering into the page', () => {
     expect(root.querySelector('[data-hosp-next]').disabled).toBe(true);
   });
 
+  it('fits pages to a new width in the next frame, so the resize observer never loops', () => {
+    let observed;
+    const frames = [];
+    vi.stubGlobal('ResizeObserver', class { constructor(fn) { observed = fn; } observe() {} });
+    vi.stubGlobal('requestAnimationFrame', (fn) => frames.push(fn));
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    W.renderTo(el, '<div data-hosp-pager data-hosp-per-view="auto" data-hosp-min-width="100">{#months}<section data-hosp-page>{label}</section>{/months}</div>',
+      { months: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] }, {});
+    const box = el.shadowRoot.querySelector('[data-hosp-pager]');
+    const visible = () => [...box.querySelectorAll('section')].filter((s) => !s.hidden).length;
+    expect(visible()).toBe(1);
+    // A height change alone (the pages it just showed) asks for nothing.
+    observed();
+    expect(frames).toHaveLength(0);
+    Object.defineProperty(box, 'clientWidth', { configurable: true, get: () => 300 });
+    observed();
+    expect(visible()).toBe(1);
+    frames.shift()();
+    expect(visible()).toBe(3);
+    observed();
+    expect(frames).toHaveLength(0);
+  });
+
   it('isolates the widget CSS from the page', async () => {
     stubFetch({ '/api/properties/p1': { property_name: 'X' } });
     const el = snippet({ template: '<style>h3{color:red}</style><h3>{property_name}</h3>' });

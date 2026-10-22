@@ -39,7 +39,18 @@
         if (e.key === 'ArrowRight') step(1);
         else if (e.key === 'ArrowLeft') step(-1);
       });
-      if (mode === 'auto' && typeof ResizeObserver === 'function') new ResizeObserver(update).observe(box);
+      if (mode === 'auto' && typeof ResizeObserver === 'function') {
+        // Showing other pages changes the box's height. Doing that inside the
+        // observer would notify it again in the same frame, which browsers
+        // report as a "ResizeObserver loop" error: so only a new width counts,
+        // and the update waits for the next frame.
+        var width = box.clientWidth;
+        new ResizeObserver(function () {
+          if (box.clientWidth === width) return;
+          width = box.clientWidth;
+          requestAnimationFrame(update);
+        }).observe(box);
+      }
       update();
     }
 

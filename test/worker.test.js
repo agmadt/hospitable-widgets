@@ -206,21 +206,6 @@ describe('dummy mode', () => {
     }
   });
 
-  it('shows a demo page with a "Sample data" label', async () => {
-    const res = await get('/demo', dummyEnv);
-    const html = await res.text();
-    expect(res.headers.get('Content-Type')).toMatch(/text\/html/);
-    expect(html).toContain('Sample data');
-    expect(html).toContain(`data-hosp-worker="${ORIGIN}"`);
-    expect(html).toContain(`data-hosp-property="${VILLA}"`);
-    // The released widgets by default, so a deployed copy's demo never goes stale.
-    expect(html).toContain('<script src="https://cdn.jsdelivr.net/gh/agmadt/hospitable-widgets@1/widget/widget.min.js" defer>');
-    expect(await (await get('/demo', { ...dummyEnv, WIDGET_URL: '/widget.js' })).text()).toContain('<script src="/widget.js" defer>');
-    // One-line snippets, one per starter template.
-    expect((html.match(/<div data-hosp="/g) || []).length).toBe(16);
-    expect(html).not.toContain('<template');
-  });
-
   it('never calls Hospitable and skips the cron', async () => {
     const real = vi.fn();
     vi.stubGlobal('fetch', real);

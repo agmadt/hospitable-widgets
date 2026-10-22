@@ -12,10 +12,6 @@
   // Hourly refresh, at minute 0 (UTC).
   "triggers": { "crons": ["0 * * * *"] },
 
-  // Serves widget/widget.js at /widget.js for the /demo page. Static files are
-  // free and do not count as Worker requests. Websites load widget.js from jsDelivr.
-  "assets": { "directory": "./widget" },
-
   "vars": {
     // Where this Worker's home page sends you after deploy.
     "BUILDER_URL": "https://hospitable-widget.adhityoagam.com/"
