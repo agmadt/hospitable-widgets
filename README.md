@@ -14,9 +14,9 @@ The widgets need a key to read your listings: an access token that you create in
 - Cloudflare keeps the token in a small program in your own Cloudflare account, which Cloudflare calls a Worker. It's saved there as a secret, and once it's saved Cloudflare hides it even from you. The builder, your website and your visitors never see it.
 - The token only needs Read permission, and your Worker only ever reads. It can't change a listing, touch a reservation or send a message.
 - Private details are removed before anything is saved: door codes, Wi-Fi passwords, your address, guests' last names and more. [Privacy](#privacy) has the full list.
-- Your token and your listing data stay in accounts you own. Your Worker runs in your Cloudflare account, and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a separate website: it never asks for your token, and it only reads what your Worker already shows the public.
+- Your token and your listing data stay in accounts you own. Your Worker runs in your Cloudflare account, and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a separate website with its own code, in [hospitable-widget-builder](https://github.com/agmadt/hospitable-widget-builder): it never asks for your token, it only reads what your Worker already shows the public, and you can [run your own copy](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder) of it.
 - Your website stays as it is. Each widget draws inside its own sealed box on the page, so its design can't spill onto the rest of your site, and your site's design can't break the widget.
-- The code of your Worker and of the widgets is open. Anyone can read every line of it here on GitHub.
+- The code of your Worker, the widgets and the builder is open. Anyone can read every line of it on GitHub, in this project and in the builder's.
 - The widget code on your website comes from this project, delivered by jsDelivr, and updates itself to each new 1.x version. If you'd rather decide when it changes, replace `@1` in your snippet with an exact version, such as `@1.1.2`.
 - As with any account that holds a key, turn on two-step login for your Cloudflare, GitHub and Hospitable accounts.
 
@@ -24,13 +24,19 @@ The widgets need a key to read your listings: an access token that you create in
 > Don't take our word for it. Copy the prompt below, paste it into ChatGPT or Claude, and ask for its opinion. Use a version that can browse the web, so it can open the code.
 
 ```text
-Please check whether this open-source project is safe for me to use:
-https://github.com/agmadt/hospitable-widgets
+Please check whether this open-source project is safe for me to use.
+It has two parts:
+- https://github.com/agmadt/hospitable-widgets
+  the Worker and the widget code
+- https://github.com/agmadt/hospitable-widget-builder
+  the builder website, hospitable-widget.adhityoagam.com
 
-I'm a vacation rental host, not a programmer. Open the project and read
-the actual code, not only the README: everything in src/ and widget/,
-plus wrangler.jsonc, package.json and scripts/. Tell me which files you
-opened. If you can't open them, say so instead of guessing.
+I'm a vacation rental host, not a programmer. Open both parts and read
+the actual code, not only the READMEs. In hospitable-widgets: everything
+in src/ and widget/, plus wrangler.jsonc, package.json and scripts/. In
+hospitable-widget-builder: everything in src/, plus index.html, .env,
+package.json and vite.config.ts. Tell me which files you opened. If you
+can't open them, say so instead of guessing.
 
 Then answer in plain language, and say which file and line each answer
 comes from:
@@ -46,8 +52,9 @@ comes from:
    address or guest details?
 4. Could the code I paste into my website harm my site or my visitors?
    Does it track visitors or set cookies? Who can change that code later?
-5. Which outside services are involved, including the builder website,
-   and what does each one receive?
+5. Which outside services are involved, and what does each one
+   receive? Include the builder website: what does it load, and does it
+   send anything I type or pick there to anyone?
 6. Could any of this cost me money?
 
 End with a short verdict: would you install it, and what should I watch
@@ -92,7 +99,7 @@ A few things in Hospitable and on your website decide what the widgets can show:
 
 ## Set it up
 
-The easiest way is to follow the [builder](https://hospitable-widget.adhityoagam.com/). It takes you through these same steps one at a time and shows a live preview of your widget as you go. The steps are written out below too, if you'd like to read them first.
+The easiest way is to follow the [builder](https://hospitable-widget.adhityoagam.com/). It takes you through these same steps one at a time and shows a live preview of your widget as you go. The steps are written out below too, if you'd like to read them first. The builder's own README explains how to [match your website's style](https://github.com/agmadt/hospitable-widget-builder#your-own-style) and how to [run your own copy](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder).
 
 1. Open the [builder](https://hospitable-widget.adhityoagam.com/) and pick a widget, then its colors, fonts and layout. You can do this before anything else: it uses sample data until you connect. Your design is saved in your browser.
 2. In Hospitable, go to Apps → API access → Access tokens. Add a token with Read permission and copy it. A token lasts one year.
@@ -161,7 +168,7 @@ Change these in Cloudflare under Workers & Pages → hospitable-widgets → Sett
 | `PUBLIC_GUIDE_TOPICS` | The Knowledge Hub topics the Local guide widget may show, by name and separated by commas, for example `Local attractions, Where to eat`. | No topics are shown |
 | `CACHE_MINUTES` | How long a visitor's browser keeps widget data, from `0` (not at all) to `1440` (a day). Lower shows your changes to returning visitors sooner and uses more of your allowance. The builder shows the value your Worker uses. | `240` (4 hours) |
 | `SUBREQUEST_BUDGET` | How many calls to Hospitable one hourly refresh may make. Raise it to `900` on the Workers Paid plan. | `45` |
-| `BUILDER_URL` | Where your Worker's home page sends you. | This project's builder |
+| `BUILDER_URL` | Where your Worker's home page sends you. If you [run your own builder](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder), change it in `wrangler.jsonc` in your copy on GitHub rather than here, so updates keep it. | This project's builder |
 | `WIDGET_URL` | The widget code your Worker's `/demo` page uses. | The newest release, from jsDelivr |
 
 The hourly refresh isn't a setting here: its schedule lives in the `wrangler.jsonc` file. If you change it in the Cloudflare dashboard instead, the next update from GitHub puts it back to hourly.
