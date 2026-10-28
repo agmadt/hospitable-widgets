@@ -1,0 +1,35 @@
+<!--hw {"name":"Getting there","blurb":"The address, a map link and your check-in instructions","height":420,"guest":true,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Getting there"},
+ {"key":"map_label","label":"Map button text","type":"text","default":"Open in Maps"},
+ {"key":"show_instructions","label":"Show check-in instructions","type":"toggle","default":"on","hint":"Your guest access text from Hospitable. It often holds lockbox codes, so it shows from 24 hours before check-in until check-out (REVEAL_HOURS)."},
+ {"key":"instructions_heading","label":"Instructions heading","type":"text","default":"How to get in"},
+ {"key":"hidden_text","label":"Before the instructions show","type":"text","default":"Your check-in instructions appear on {when}.","tokens":{"when":"stay_access_formatted"}},
+ {"key":"signin_text","label":"Before the guest signs in","type":"text","default":"Sign in with your booking to see this."},
+ {"key":"signin_label","label":"Sign-in button text","type":"text","default":"Sign in"},
+ {"key":"signin_url","label":"Sign-in button opens","type":"url","default":"","hint":"The page of your website with the Guest sign-in widget. Without it, the button is left out."}
+]} -->
+<style>
+.gs-out{display:grid;justify-items:center;gap:.7em;text-align:center;padding:calc(var(--hw-space) * .5) 0}
+.gs-out .hw-ico{width:2em;height:2em;color:var(--hw-accent)}
+.gs-out p{margin:0;color:var(--hw-muted)}
+.gt-addr{display:flex;gap:.7em;align-items:flex-start;font-weight:600;margin-bottom:1em}
+.gt-addr .hw-ico{color:var(--hw-accent);margin-top:.1em}
+.gt-how{margin-top:calc(var(--hw-space) * 1.3);padding-top:calc(var(--hw-space) * 1.1);border-top:1px solid var(--hw-line)}
+.gt-how h3{margin-bottom:.5em}
+.gt-how p{white-space:pre-line;margin:0}
+.gt-times{color:var(--hw-muted);font-size:.92em;margin-top:.8em}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {#signed_in}
+  <h2>[[heading]]</h2>
+  {#stay_address}<p class="gt-addr"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>{stay_address}</span></p>{/stay_address}
+  {#stay_map_url}<a class="hw-btn" href="{stay_map_url}" target="_blank" rel="noopener">[[map_label]]</a>{/stay_map_url}
+  [[#show_instructions]]<div class="gt-how"><h3>[[instructions_heading]]</h3>
+    {#stay_checkin_instructions}<p>{stay_checkin_instructions}</p>{/stay_checkin_instructions}
+    {^stay_checkin_instructions}{^stay_access_open}{^stay_access_ended}<p class="hw-muted">[[hidden_text]]</p>{/stay_access_ended}{/stay_access_open}{/stay_checkin_instructions}
+    {#stay_check_in}<p class="gt-times">Check-in from {stay_check_in_formatted} on {stay_arrival_formatted}</p>{/stay_check_in}
+  </div>[[/show_instructions]]
+  {/signed_in}
+  {^signed_in}<div class="gs-out"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><p>[[signin_text]]</p>[[#signin_url]]<a class="hw-btn" href="[[signin_url]]" target="_top">[[signin_label]]</a>[[/signin_url]]</div>{/signed_in}
+</section>

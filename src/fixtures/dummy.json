@@ -1,5 +1,5 @@
 {
-  "_about": "Sample data for dummy mode (HOSPITABLE_PAT=dummy). Every response is shaped exactly like Hospitable's OpenAPI spec (test/fixtures/hospitable-openapi.json; a test rejects any field the spec doesn't list) and uses the spec's own example values wherever they work in a widget: names, policies, fees, deposits, the Airbnb listing, the Berlin address, the user, the first review and the 'Arrival information' topic. Only values that would leave a widget empty were replaced: photo URLs (the spec's don't load), 'string' placeholders, dates (calendars are generated from today), and a second property. Private fields hold SECRET values so the tests can prove they never reach a widget.",
+  "_about": "Sample data for dummy mode (HOSPITABLE_PAT=dummy). Every response is shaped exactly like Hospitable's OpenAPI spec (test/fixtures/hospitable-openapi.json; a test rejects any field the spec doesn't list) and uses the spec's own example values wherever they work in a widget: names, policies, fees, deposits, the Airbnb listing, the Berlin address, the user, the first review and the 'Arrival information' topic. Only values that would leave a widget empty were replaced: photo URLs (the spec's don't load), 'string' placeholders, dates (calendars are generated from today), and a second property. Private fields hold SECRET values so the tests can prove they never reach a widget. What only a signed-in guest may see (Wi-Fi, the street address, check-in instructions, the house manual, door codes, the 'Arrival information' topic) holds realistic values instead, and the tests prove those never reach a public endpoint. Reservations are dated from today: dummy.reservations says when each one arrives.",
   "api": {
     "user": {
       "id": "5c05eb47-b6ec-54fe-b4b9-6e95f50b86d0",
@@ -26,14 +26,14 @@
         "picture": "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1600&q=80",
         "address": {
           "number": "12",
-          "street": "Jl. SECRET Street",
+          "street": "Jl. Pantai Suluban",
           "city": "Uluwatu",
           "state": "Bali",
           "country": "ID",
           "country_name": "Indonesia",
           "postcode": "80361",
           "coordinates": { "latitude": "-8.8291", "longitude": "115.0849" },
-          "display": "12 Jl. SECRET Street, 80361 Uluwatu, ID"
+          "display": "12 Jl. Pantai Suluban, 80361 Uluwatu, ID"
         },
         "timezone": "+0800",
         "listed": true,
@@ -66,14 +66,14 @@
         "parent_child": null,
         "details": {
           "space_overview": "The villa is laid out as three pavilions around the pool. The main pavilion holds the living room, dining area and kitchen, with sliding walls that disappear completely in good weather.\n\nThe main bedroom has a king bed, a sunken bathtub and its own terrace. The two garden bedrooms share a covered walkway and each has a bathroom with a rain shower.",
-          "guest_access": "SECRET guest access: side gate code 4711",
-          "house_manual": "SECRET house manual: alarm code 2580",
+          "guest_access": "Park under the banyan tree. The side gate opens with code 4711, and the front door key is in the lockbox beside it, same code.",
+          "house_manual": "The pool pump runs from 9:00 to 17:00. Air conditioning remotes are in the bedside drawers; please switch the AC off when you go out.\nDrinking water is in the blue dispenser in the kitchen.",
           "other_details": "SECRET other details for staff",
           "additional_rules": "Quiet hours are from 10 pm to 7 am.\nPlease use the pool towels by the pool and keep the bath towels inside.\nNo glass in or around the pool.",
           "neighborhood_description": "Uluwatu sits on the southern tip of the Bukit peninsula, known for its surf breaks, white-sand coves and an 11th-century sea temple. Bingin and Padang Padang beaches are a short drive away.",
           "getting_around": "A scooter or a car with driver is the easiest way around. We can book a driver for you; the airport is about 40 minutes away.",
-          "wifi_name": "SECRET-WIFI-NAME",
-          "wifi_password": "SECRET-WIFI-PASSWORD"
+          "wifi_name": "Relaxing-Villa-5G",
+          "wifi_password": "ombak-laut-2580"
         },
         "bookings": {
           "booking_policies": {
@@ -137,14 +137,14 @@
         "parent_child": null,
         "details": {
           "space_overview": "The loft takes up the whole top floor, with windows on three sides. A small lift goes up to the fourth floor; the last flight is a short staircase.",
-          "guest_access": "SECRET guest access: key safe code 1234",
-          "house_manual": "SECRET house manual",
+          "guest_access": "The key safe is to the left of the front door, code 1234. Take the lift to the fourth floor, then the short staircase to the top.",
+          "house_manual": "Bins are in the courtyard: yellow for packaging, blue for paper, black for the rest. Quiet hours start at 22:00.",
           "other_details": "",
           "additional_rules": "Well-behaved dogs are welcome; please let us know in advance.\nThe building is residential, so please keep it down on the stairs at night.",
           "neighborhood_description": "Senefelderplatz sits between Mitte and Prenzlauer Berg: cafés, bakeries and the Saturday market on Kollwitzplatz are all a few minutes' walk away.",
           "getting_around": "The U2 stops at Senefelderplatz, right outside. Trams M1 and 12 are around the corner, and bikes are easy to rent.",
-          "wifi_name": "SECRET-WIFI-NAME-2",
-          "wifi_password": "SECRET-WIFI-PASSWORD-2"
+          "wifi_name": "Loft-Senefelder",
+          "wifi_password": "kastanie-1234"
         },
         "bookings": {
           "booking_policies": {
@@ -237,6 +237,80 @@
         { "id": "8b2e1d33-6c7f-4a4b-8d9e-2f3a4b5c6d03", "platform": "airbnb", "public": { "rating": 4, "review": "Lovely flat. The last flight of stairs is a bit tight with big suitcases, but worth it for the view.", "response": "Thanks for the tip! We now offer luggage drop-off downstairs." }, "private": { "feedback": "SECRET", "detailed_ratings": [] }, "responded_at": "2026-08-02T08:00:00Z", "reviewed_at": "2026-08-01T08:00:00Z", "can_respond": false, "guest": { "first_name": "Jonas", "last_name": "SECRETLASTNAME", "language": "de" } }
       ]
     },
+    "reservations": [
+      {
+        "id": "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e01", "conversation_id": "d4e8b2f3-5c6a-4d7e-9f0a-2b3c4d5e6f01", "conversation_language": "English", "conversation_language_code": "en",
+        "platform": "airbnb", "platform_id": "HM4CXJ4KPX", "nights": 4, "status": "accepted",
+        "guests": { "total": 3, "adult_count": 2, "child_count": 1, "infant_count": 0, "pet_count": 0 },
+        "stay_type": "guest_stay", "owner_stay": null, "notes": "SECRET internal note: VIP, late arrival", "site_id": null,
+        "guest": { "id": "e5f9c3a4-6d7b-4e8f-a01b-3c4d5e6f7a01", "profile_picture": null, "location": "Melbourne, Australia", "first_name": "Hannah", "last_name": "Moore", "email": null, "phone_numbers": ["SECRET +61 400 000 000"] },
+        "financials": {
+          "guest": {
+            "accommodation": { "amount": 128000, "formatted": "$1,280.00", "label": "Accommodation", "category": "Accommodation" },
+            "fees": [
+              { "amount": 9000, "formatted": "$90.00", "label": "Cleaning fee", "category": "Guest fees" },
+              { "amount": 19212, "formatted": "$192.12", "label": "Service fee", "category": "Service fees" }
+            ],
+            "discounts": [{ "amount": -12800, "formatted": "-$128.00", "label": "Weekly discount", "category": "Discount" }],
+            "taxes": [{ "amount": 13720, "formatted": "$137.20", "label": "Tourism tax", "category": "Taxes" }],
+            "adjustments": [],
+            "total_price": { "amount": 147132, "formatted": "$1,471.32", "label": "Total", "category": "Total" }
+          },
+          "host": {
+            "accommodation": { "amount": 128000, "formatted": "$1,280.00", "label": "Accommodation", "category": "Accommodation" },
+            "accommodation_breakdown": [],
+            "guest_fees": [{ "amount": 9000, "formatted": "$90.00", "label": "Cleaning fee", "category": "Guest fees" }],
+            "host_fees": [{ "amount": -4119, "formatted": "-$41.19", "label": "SECRET host service fee", "category": "Host fees" }],
+            "discounts": [{ "amount": -12800, "formatted": "-$128.00", "label": "Weekly discount", "category": "Discount" }],
+            "adjustments": [],
+            "taxes": [{ "amount": 13720, "formatted": "$137.20", "label": "Tourism tax", "category": "Host Tax" }],
+            "revenue": { "amount": 133801, "formatted": "$1,338.01", "label": "SECRET revenue", "category": "Revenue" }
+          },
+          "currency": "USD"
+        },
+        "smartlock_code": "4711"
+      },
+      {
+        "id": "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e02", "conversation_id": "d4e8b2f3-5c6a-4d7e-9f0a-2b3c4d5e6f02", "conversation_language": "German", "conversation_language_code": "de",
+        "platform": "booking", "platform_id": "4182736455", "nights": 3, "status": "accepted",
+        "guests": { "total": 2, "adult_count": 2, "child_count": 0, "infant_count": 0, "pet_count": 1 },
+        "stay_type": "guest_stay", "owner_stay": null, "notes": null, "site_id": null,
+        "guest": { "id": "e5f9c3a4-6d7b-4e8f-a01b-3c4d5e6f7a02", "profile_picture": null, "location": "Hamburg, Germany", "first_name": "Lukas", "last_name": "Becker", "email": "lbecker.482917@guest.booking.com", "phone_numbers": [] },
+        "financials": {
+          "guest": {
+            "accommodation": { "amount": 43800, "formatted": "€438.00", "label": "Accommodation", "category": "Accommodation" },
+            "fees": [{ "amount": 6000, "formatted": "€60.00", "label": "Cleaning fee", "category": "Guest fees" }, { "amount": 2500, "formatted": "€25.00", "label": "Pet fee", "category": "Other fee" }],
+            "discounts": [],
+            "taxes": [{ "amount": 2190, "formatted": "€21.90", "label": "City tax", "category": "Taxes" }],
+            "adjustments": [],
+            "total_price": { "amount": 54490, "formatted": "€544.90", "label": "Total", "category": "Total" }
+          },
+          "host": {
+            "accommodation": { "amount": 43800, "formatted": "€438.00", "label": "Accommodation", "category": "Accommodation" },
+            "accommodation_breakdown": [], "guest_fees": [], "host_fees": [], "discounts": [], "adjustments": [], "taxes": [],
+            "revenue": { "amount": 48000, "formatted": "€480.00", "label": "SECRET revenue", "category": "Revenue" }
+          },
+          "currency": "EUR"
+        },
+        "smartlock_code": "1234"
+      },
+      {
+        "id": "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e03", "conversation_id": "d4e8b2f3-5c6a-4d7e-9f0a-2b3c4d5e6f03", "conversation_language": "English", "conversation_language_code": "en",
+        "platform": "airbnb", "platform_id": "HMCANCEL22", "nights": 2, "status": "cancelled",
+        "guests": { "total": 1, "adult_count": 1, "child_count": 0, "infant_count": 0, "pet_count": 0 },
+        "stay_type": "guest_stay", "owner_stay": null, "notes": null, "site_id": null,
+        "guest": { "id": "e5f9c3a4-6d7b-4e8f-a01b-3c4d5e6f7a03", "profile_picture": null, "location": null, "first_name": "Sam", "last_name": "Taylor", "email": null, "phone_numbers": [] },
+        "smartlock_code": "4711"
+      },
+      {
+        "id": "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e04", "conversation_id": "d4e8b2f3-5c6a-4d7e-9f0a-2b3c4d5e6f04", "conversation_language": "English", "conversation_language_code": "en",
+        "platform": "direct", "platform_id": "DIR-20417", "nights": 3, "status": "accepted",
+        "guests": { "total": 2, "adult_count": 2, "child_count": 0, "infant_count": 0, "pet_count": 0 },
+        "stay_type": "guest_stay", "owner_stay": null, "notes": null, "site_id": null,
+        "guest": { "id": "e5f9c3a4-6d7b-4e8f-a01b-3c4d5e6f7a04", "profile_picture": null, "location": null, "first_name": "Ana", "last_name": "Sánchez-Ruiz", "email": "ana.sanchez@example.com", "phone_numbers": [] },
+        "smartlock_code": "4711"
+      }
+    ],
     "knowledge_hub": {
       "550e8400-e29b-41d4-a716-446655440000": {
         "property": { "id": 101, "name": "Relaxing Villa near the sea", "picture": null },
@@ -253,7 +327,7 @@
             { "id": 112, "content": "A tip that is still being processed.", "original_content": null, "is_edited": false, "state": "aggregating", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
           ] },
           { "id": 12, "name": "Arrival information", "created_via": "public_api", "last_updated_via": "public_api", "updated_at": "2026-05-01T00:00:00Z", "aggregate_items": [
-            { "id": 120, "content": "Check-in starts at 4pm. SECRET door code: 4711.", "original_content": null, "is_edited": false, "state": "ready", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
+            { "id": 120, "content": "Check-in starts at 3pm. Park under the banyan tree; the side gate code is 4711.", "original_content": null, "is_edited": false, "state": "ready", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
           ] }
         ]
       },
@@ -269,7 +343,7 @@
             { "id": 210, "content": "Konnopke's Imbiss: Berlin's classic currywurst under the U-Bahn tracks.", "original_content": null, "is_edited": false, "state": "ready", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
           ] },
           { "id": 22, "name": "Arrival information", "created_via": "public_api", "last_updated_via": "public_api", "updated_at": "2026-05-01T00:00:00Z", "aggregate_items": [
-            { "id": 220, "content": "Check-in starts at 4pm. SECRET key safe code 1234.", "original_content": null, "is_edited": false, "state": "ready", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
+            { "id": 220, "content": "Check-in starts at 4pm. The key safe code is 1234.", "original_content": null, "is_edited": false, "state": "ready", "created_via": "public_api", "last_updated_via": "public_api", "sources": [], "updated_at": "2026-05-01T00:00:00Z" }
           ] }
         ]
       }
@@ -277,6 +351,13 @@
   },
   "dummy": {
     "public_guide_topics": ["Local attractions", "Where to eat"],
+    "guest_guide_topics": ["Arrival information"],
+    "reservations": {
+      "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e01": { "property": "550e8400-e29b-41d4-a716-446655440000", "arrives_in_days": 0, "booked_days_before": 41, "_note": "Arrives today: the door code shows. Sign in with HM4CXJ4KPX and Moore." },
+      "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e02": { "property": "6f1c2b9a-4d3e-4c8b-9a1e-2b7d5c0e8f41", "arrives_in_days": 12, "booked_days_before": 20, "_note": "Arrives in 12 days: the door code is still hidden. Sign in with 4182736455 and Becker, or the Booking.com alias email." },
+      "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e03": { "property": "550e8400-e29b-41d4-a716-446655440000", "arrives_in_days": 5, "booked_days_before": 9, "_note": "Cancelled: sign-in is refused." },
+      "c3d7a1e2-4b5f-4c6d-8e9f-1a2b3c4d5e04": { "property": "550e8400-e29b-41d4-a716-446655440000", "arrives_in_days": -10, "booked_days_before": 30, "_note": "Left a week ago: sign-in is refused." }
+    },
     "calendar": {
       "550e8400-e29b-41d4-a716-446655440000": { "weekday": 32000, "weekend": 36500, "high_season_months": [7, 8, 12], "high_season_factor": 1.35, "min_stay": 3, "high_season_min_stay": 5, "occupancy": 0.62, "seed": 7 },
       "6f1c2b9a-4d3e-4c8b-9a1e-2b7d5c0e8f41": { "weekday": 13500, "weekend": 15900, "high_season_months": [6, 7, 8, 9], "high_season_factor": 1.25, "min_stay": 2, "high_season_min_stay": 3, "occupancy": 0.7, "seed": 11 }

@@ -1,9 +1,10 @@
 {
-  "widget.js": 6029,
+  "widget.js": 6088,
   "modules/templates.js": 2570,
-  "modules/analyze.js": 840,
+  "modules/analyze.js": 884,
   "modules/calendar.js": 1202,
   "modules/reviews.js": 904,
   "modules/lightbox.js": 2632,
-  "modules/pager.js": 873
+  "modules/pager.js": 873,
+  "modules/guest.js": 2364
 }

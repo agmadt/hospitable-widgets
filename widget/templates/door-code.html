@@ -1,0 +1,32 @@
+<!--hw {"name":"Door code","blurb":"The guest's door code, shown from shortly before check-in","height":320,"guest":true,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Your door code"},
+ {"key":"note","label":"How to use it","type":"textarea","default":"Enter the code on the keypad, then turn the handle."},
+ {"key":"hidden_text","label":"Before it shows","type":"text","default":"Your code appears on {when}.","tokens":{"when":"stay_access_formatted"},"hint":"Door codes show from 24 hours before check-in until check-out. Change the hours with REVEAL_HOURS in your Worker's settings."},
+ {"key":"no_code_text","label":"When the booking has no code","type":"text","default":"Your host will send you the code before you arrive."},
+ {"key":"ended_text","label":"After check-out","type":"text","default":"This code stopped working at check-out. Thank you for staying!"},
+ {"key":"signin_text","label":"Before the guest signs in","type":"text","default":"Sign in with your booking to see this."},
+ {"key":"signin_label","label":"Sign-in button text","type":"text","default":"Sign in"},
+ {"key":"signin_url","label":"Sign-in button opens","type":"url","default":"","hint":"The page of your website with the Guest sign-in widget. Without it, the button is left out."}
+]} -->
+<style>
+.gs-out{display:grid;justify-items:center;gap:.7em;text-align:center;padding:calc(var(--hw-space) * .5) 0}
+.gs-out .hw-ico{width:2em;height:2em;color:var(--hw-accent)}
+.gs-out p{margin:0;color:var(--hw-muted)}
+.dc-code{font:700 2.6em/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;padding:calc(var(--hw-space) * .9) calc(var(--hw-space) * 1.1);border-radius:calc(var(--hw-radius) * .75);background:var(--hw-soft);color:var(--hw-accent);text-align:center;margin-bottom:calc(var(--hw-space) * .8)}
+.dc-note{margin:.9em 0 0;color:var(--hw-muted)}
+.dc-wait{display:flex;gap:.8em;align-items:center;color:var(--hw-muted)}
+.dc-wait .hw-ico{width:1.6em;height:1.6em;color:var(--hw-accent)}
+.dc-wait p{margin:0}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {#signed_in}
+  <h2>[[heading]]</h2>
+  {#stay_door_code}<div class="dc-code">{stay_door_code}</div><button class="hw-btn ghost" type="button" data-hosp-copy="{stay_door_code}">Copy code</button>[[#note]]<p class="dc-note">[[note]]</p>[[/note]]{/stay_door_code}
+  {^stay_door_code}
+    {#stay_access_ended}<p class="hw-muted">[[ended_text]]</p>{/stay_access_ended}
+    {^stay_access_ended}{#stay_access_open}<p class="hw-muted">[[no_code_text]]</p>{/stay_access_open}{^stay_access_open}<div class="dc-wait"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><p>[[hidden_text]]</p></div>{/stay_access_open}{/stay_access_ended}
+  {/stay_door_code}
+  {/signed_in}
+  {^signed_in}<div class="gs-out"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><p>[[signin_text]]</p>[[#signin_url]]<a class="hw-btn" href="[[signin_url]]" target="_top">[[signin_label]]</a>[[/signin_url]]</div>{/signed_in}
+</section>

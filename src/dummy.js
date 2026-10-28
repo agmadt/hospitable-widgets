@@ -8,6 +8,7 @@ import fixture from './fixtures/dummy.json';
 
 const api = fixture.api;
 export const DUMMY_TOPICS = fixture.dummy.public_guide_topics.map((t) => t.toLowerCase());
+export const DUMMY_GUEST_TOPICS = fixture.dummy.guest_guide_topics.map((t) => t.toLowerCase());
 
 const DAY = 86_400_000;
 const EPOCH = Date.UTC(2026, 0, 1);
@@ -107,6 +108,53 @@ export function dummyCalendar(id, startDate, endDate) {
   return { listing_id: id, provider: 'dummy', start_date: startDate, end_date: endDate, days };
 }
 
+/** "+0800" or "+08:00" → minutes east of UTC. */
+function offsetMinutes(tz) {
+  const m = /^([+-])(\d{2}):?(\d{2})$/.exec(String(tz || ''));
+  return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) : 0;
+}
+
+/**
+ * A sample reservation as GET /reservations/{identifier} returns it, dated
+ * from today in the property's time zone (dummy.reservations says when it
+ * arrives), with only the parts `include` asks for.
+ */
+export function dummyReservation(raw, include) {
+  const rules = fixture.dummy.reservations[raw.id];
+  const property = api.properties.find((p) => p.id === rules.property);
+  const zone = property.timezone.replace(/^([+-]\d{2}):?(\d{2})$/, '$1:$2');
+  const today = new Date(Date.now() + offsetMinutes(property.timezone) * 60_000).toISOString().slice(0, 10);
+  const day = (n) => new Date(Date.parse(today + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10);
+  const at = (date, time) => `${date}T${time}:00${zone}`;
+  const arrival = day(rules.arrives_in_days);
+  const departure = day(rules.arrives_in_days + raw.nights);
+  const booked = at(day(rules.arrives_in_days - rules.booked_days_before), '10:12');
+  // Hospitable sends no sub-category for a plain accepted or cancelled stay.
+  const status = { category: raw.status, sub_category: null };
+  const { guest, financials, smartlock_code, ...base } = raw;
+  const out = {
+    ...base,
+    booking_date: booked,
+    arrival_date: at(arrival, '00:00'),
+    departure_date: at(departure, '00:00'),
+    check_in: at(arrival, property['check-in']),
+    check_out: at(departure, property['check-out']),
+    last_message_at: booked,
+    reservation_status: { current: status, history: [{ ...status, changed_at: booked }] },
+    status_history: [{ ...status, changed_at: booked }],
+  };
+  const parts = new Set(String(include || '').split(','));
+  if (parts.has('guest')) out.guest = guest;
+  if (parts.has('financials') && financials) out.financials = financials;
+  if (parts.has('smartlock_code') && smartlock_code) out.smartlock_code = smartlock_code;
+  if (parts.has('properties')) {
+    // A reservation carries its properties without the details and booking settings.
+    const { details, bookings, ...summary } = property;
+    out.properties = [summary];
+  }
+  return out;
+}
+
 /** A fetch() that serves the Hospitable API from the sample data. */
 export async function dummyFetch(input, init = {}) {
   const url = new URL(typeof input === 'string' ? input : input.url);
@@ -118,6 +166,14 @@ export async function dummyFetch(input, init = {}) {
 
   if (path === '/user') return json({ data: api.user });
   if (path === '/properties') return json(page(api.properties, url, 100));
+
+  const r = /^\/reservations\/([^/]+)$/.exec(path);
+  if (r) {
+    // The identifier is the UUID or the code guests see, exactly as Hospitable shows it.
+    const id = decodeURIComponent(r[1]);
+    const raw = api.reservations.find((x) => x.id === id || x.platform_id === id);
+    return raw ? json({ data: dummyReservation(raw, params.get('include')) }) : json({ status_code: 404, reason_phrase: 'Not Found' }, 404);
+  }
 
   const m = /^\/properties\/([^/]+)(?:\/([a-z-]+))?$/.exec(path);
   if (!m) return json({ status_code: 404, reason_phrase: 'Not Found' }, 404);

@@ -14,7 +14,7 @@ async function call(path) {
 describe("dummy data matches Hospitable's OpenAPI spec", () => {
   it('copies the schemas from the published spec', () => {
     expect(openapi.source).toMatch(/^https:\/\/api\.stoplight\.io\//);
-    expect(Object.keys(openapi.schemas)).toHaveLength(7);
+    expect(Object.keys(openapi.schemas)).toHaveLength(8);
   });
 
   const ids = fixture.api.properties.map((p) => p.id);
@@ -37,6 +37,30 @@ describe("dummy data matches Hospitable's OpenAPI spec", () => {
       expect(validate(openapi.schemas[schema], await call(path))).toEqual([]);
     });
   }
+
+  // The spec's sub-category list has no entry for a plain accepted or
+  // cancelled stay, for which Hospitable sends null; nothing else is excused.
+  const noSubCategory = (errors) => errors.filter((e) => !/reservation_status\.(current|history\[\d+\])\.sub_category: expected string, got null$/.test(e));
+
+  for (const r of fixture.api.reservations) {
+    it(`/reservations/{identifier} for ${r.platform_id}, by code and by UUID`, async () => {
+      for (const id of [r.platform_id, r.id]) {
+        const body = await call(`/reservations/${id}?include=guest,properties,financials,smartlock_code`);
+        expect(body.data.id).toBe(r.id);
+        expect(noSubCategory(validate(openapi.schemas['/reservations/{identifier}'], body))).toEqual([]);
+      }
+    });
+  }
+
+  it('dates sample reservations from today, in the property’s time zone', async () => {
+    const { data } = await call('/reservations/HM4CXJ4KPX?include=properties');
+    expect(data.check_in).toMatch(/^\d{4}-\d{2}-\d{2}T15:00:00\+08:00$/);
+    expect(data.arrival_date.slice(0, 10)).toBe(data.check_in.slice(0, 10));
+    expect(Date.parse(data.check_out) - Date.parse(data.check_in)).toBe((4 * 24 - 4) * 3_600_000);
+    expect(data.properties[0]).not.toHaveProperty('details');
+    expect(data).not.toHaveProperty('guest');
+    expect((await dummyFetch(API + '/reservations/hm4cxj4kpx', { headers: { Authorization: 'Bearer dummy' } })).status).toBe(404);
+  });
 
   it('the check catches invented fields, wrong types and missing fields', async () => {
     const body = await call('/user');

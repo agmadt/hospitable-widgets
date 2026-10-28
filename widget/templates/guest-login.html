@@ -1,0 +1,41 @@
+<!--hw {"name":"Guest sign-in","blurb":"Guests sign in with their booking code and last name","height":400,"guest":true,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Find your booking"},
+ {"key":"intro","label":"Intro","type":"textarea","default":"Sign in with the code from your booking confirmation to see your arrival details."},
+ {"key":"code_label","label":"Code field","type":"text","default":"Booking code"},
+ {"key":"check","label":"Second field","type":"select","default":"name","choices":[["name","Last name"],["email","Email on the booking"],["either","Last name or email"]],"hint":"Airbnb doesn't share guests' emails and Booking.com gives an alias, so the last name works for most bookings."},
+ {"key":"check_label","label":"Second field's label (empty = automatic)","type":"text","default":""},
+ {"key":"button","label":"Button text","type":"text","default":"Sign in"},
+ {"key":"error_text","label":"When the details don't match","type":"text","default":"We couldn’t find a booking with those details. Check the code and the name on the booking."},
+ {"key":"after_url","label":"After signing in, open","type":"url","default":"","hint":"The page of your website with the widgets for signed-in guests. Leave it empty if they are on this page."},
+ {"key":"after_label","label":"Button to that page","type":"text","default":"See your stay"}
+]} -->
+<style>
+.gl form{display:grid;gap:calc(var(--hw-space) * .8)}
+.gl label{display:grid;gap:.35em;font-weight:600;font-size:.92em}
+.gl input{font:inherit;font-weight:400;font-size:1.05em;padding:.65em .8em;border:1px solid var(--hw-line);border-radius:calc(var(--hw-radius) * .6);background:var(--hw-bg);color:var(--hw-text);width:100%}
+.gl input:focus{outline:2px solid var(--hw-accent);outline-offset:1px}
+.gl .hw-btn{justify-content:center;margin-top:.2em}
+.gl .hw-btn:disabled{opacity:.6;cursor:wait}
+.gl-err{margin:0;color:#b42318;font-size:.92em}
+.gl-err:empty{display:none}
+.gl-row{display:flex;flex-wrap:wrap;gap:.8em 1.2em;align-items:center;margin-top:1em}
+.gl-out{background:none;border:0;padding:0;font:inherit;color:var(--hw-accent);text-decoration:underline;cursor:pointer}
+</style>
+<section class="hw [[card]] gl">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {^signed_in}
+  <h2>[[heading]]</h2>
+  [[#intro]]<p class="hw-muted">[[intro]]</p>[[/intro]]
+  <form data-hosp-signin data-after="[[after_url]]" data-msg-no_match="[[error_text]]">
+    <label>[[code_label]]<input name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" required maxlength="40"></label>
+    <label>[[#check_label]][[check_label]][[/check_label]][[^check_label]][[#check=name]]Last name[[/check=name]][[#check=email]]Email on the booking[[/check=email]][[#check=either]]Last name or email[[/check=either]][[/check_label]]<input name="check" [[#check=email]]type="email" autocomplete="email"[[/check=email]][[^check=email]]autocomplete="family-name"[[/check=email]] required maxlength="200"></label>
+    <p class="gl-err" data-hosp-signin-error role="alert"></p>
+    <button class="hw-btn" type="submit">[[button]]</button>
+  </form>
+  {/signed_in}
+  {#signed_in}
+  <h2>Welcome{#stay_guest_name}, {stay_guest_name}{/stay_guest_name}</h2>
+  <p class="hw-muted">You’re signed in to your stay at {stay_property_name}, {stay_arrival_formatted} to {stay_departure_formatted}.</p>
+  <div class="gl-row">[[#after_url]]<a class="hw-btn" href="[[after_url]]" target="_top">[[after_label]]</a>[[/after_url]]<button class="gl-out" type="button" data-hosp-signout>Sign out</button></div>
+  {/signed_in}
+</section>

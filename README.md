@@ -14,6 +14,7 @@ The widgets need a key to read your listings: an access token that you create in
 - Cloudflare keeps the token in a small program in your own Cloudflare account, which Cloudflare calls a Worker. It's saved there as a secret, and once it's saved Cloudflare hides it even from you. The builder, your website and your visitors never see it.
 - The token only needs Read permission, and your Worker only ever reads. It can't change a listing, touch a reservation or send a message.
 - Private details are removed before anything is saved: door codes, Wi-Fi passwords, your address, guests' last names and more. [Privacy](#privacy) has the full list.
+- Widgets for signed-in guests are the one exception, and they stay off until you turn them on. A guest who signs in with their booking code and last name sees their own stay: the door code and Wi-Fi from 24 hours before check-in, the address, what they paid. Nobody else does, and nothing of it is saved. See [Widgets for signed-in guests](#widgets-for-signed-in-guests).
 - Your token and your listing data stay in accounts you own. Your Worker runs in your Cloudflare account, and its code is copied into your GitHub account. The people who make this project never receive your token or your data. The builder is a separate website with its own code, in [hospitable-widget-builder](https://github.com/agmadt/hospitable-widget-builder): it never asks for your token, it only reads what your Worker already shows the public, and you can [run your own copy](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder) of it.
 - Your website stays as it is. Each widget draws inside its own sealed box on the page, so its design can't spill onto the rest of your site, and your site's design can't break the widget.
 - The code of your Worker, the widgets and the builder is open. Anyone can read every line of it on GitHub, in this project and in the builder's.
@@ -49,7 +50,9 @@ comes from:
    such as listings, reservations, messages or payments?
 3. Which information about my properties becomes public? Is anything
    private included, such as door codes, Wi-Fi passwords, my street
-   address or guest details?
+   address or guest details? If I turn on guest sign-in, what can a
+   guest see, could anyone else see it, and how do guests prove who
+   they are?
 4. Could the code I paste into my website harm my site or my visitors?
    Does it track visitors or set cookies? Who can change that code later?
 5. Which outside services are involved, and what does each one
@@ -119,6 +122,28 @@ Design each widget in the builder and copy its snippet. Each snippet is two line
 
 More widgets don't cost more. All widgets of the same property share one request to your Worker, and the visitor's browser reuses it on your other pages and in your other Wix boxes. That request carries all of the property's data, so a page with only a Description widget also downloads its calendar and reviews: about 4.5 KB instead of 2 KB with the sample data, and more for a listing with hundreds of reviews. The Property list widget asks for a different list, so it makes one request of its own.
 
+### Widgets for signed-in guests
+
+Eight more widgets show a guest their own stay once they sign in with their booking code and last name (or the email on the booking): Guest sign-in, Your stay, Door code, Wi-Fi, Getting there, House manual, Payment summary and Guest guide. Guests sign in once, and every guest widget on your website shows their stay.
+
+They go on your website as an iframe from your Worker, not as a snippet: the builder's Copy step gives you the iframe code, and a link for site builders that only take one, such as Hospitable Pages. The guest's sign-in then stays with your Worker, out of reach of anything else on your website.
+
+To turn them on, add two settings to your Worker (see [Settings](#settings)), then connect the builder again:
+
+1. `GUEST_SECRET`, as a secret: at least 32 random characters. The builder's Copy step makes one for you. It signs guests' sign-ins, and replacing it signs every guest out.
+2. `GUEST_SITES`: your website's addresses, such as `villakayu.com, www.villakayu.com`. Only these websites can show guest widgets. To see them in Hospitable Pages' preview too, add `hospitable-page-builder.adhityoagam.com`.
+
+What guests see and when:
+
+- Booking details, the address with a map link, the house manual and what they paid: as soon as they sign in, from booking until three days after check-out.
+- The door code, Wi-Fi and your check-in instructions (Hospitable's "guest access" text): from 24 hours before check-in until check-out. Change the hours with `REVEAL_HOURS`.
+- The Guest guide shows the Knowledge Hub topics in `PUBLIC_GUIDE_TOPICS` and `GUEST_GUIDE_TOPICS`, as soon as they sign in. Only name topics there that you're happy for any booked guest to read, then.
+- A cancelled booking signs its guest out, and a booking that isn't confirmed can't sign in.
+
+Sign-ins are slowed down after 5 wrong tries for one booking code, or 10 from one address, in 10 minutes. Airbnb doesn't share guests' emails and Booking.com gives an alias, so the Guest sign-in widget asks for the last name by default. With `HOSPITABLE_PAT` set to `dummy`, sign in with `HM4CXJ4KPX` and `Moore` (arriving today) or `4182736455` and `Becker` (in twelve days).
+
+A guest who signs in on one website is signed in on that website only. Safari may forget the sign-in when the browser closes, so guests may need to sign in again there.
+
 ### If something goes wrong
 
 | What you see | What to do |
@@ -130,6 +155,9 @@ More widgets don't cost more. All widgets of the same property share one request
 | The builder says Hospitable rejected your token | Tokens expire after a year. Create a new one in Hospitable and replace `HOSPITABLE_PAT` (see [Settings](#settings)). |
 | A widget doesn't appear on your website, or looks wrong | Paste its snippet into the [Embed Code Tester](https://webdevutility.com/embed-code-tester/), or click Check it in the Embed Code Tester in the builder's Copy step. It runs the snippet and lists everything it loads and whether anything fails. |
 | A widget says "This content can't be shown right now" | Your Worker couldn't be reached, or the day's free allowance is used up. Check that your Worker's address opens. A used-up allowance comes back at midnight UTC. |
+| A guest widget says "Guest sign-in is not set up on this Worker yet" | Add `GUEST_SECRET` and `GUEST_SITES` (see [Widgets for signed-in guests](#widgets-for-signed-in-guests)). |
+| A guest widget stays blank or shows a browser error on your website | Your website's address is missing from `GUEST_SITES`. Add it exactly as visitors open it, with and without `www.` if both work. |
+| A guest can't sign in | Check the booking code as Hospitable shows it, and the last name on the booking. Bookings that are cancelled, not yet confirmed, or ended more than three days ago can't sign in. |
 
 ## Privacy
 
@@ -142,7 +170,7 @@ Anyone who knows your Worker's address can read what it hands out, just as anyon
 - your email, billing address and tax details, listing emails, and internal property names and tags
 - anything from reservations, guests, messages, transactions or payouts
 
-Your Worker never asks Hospitable for reservations, messages, transactions or payouts. Reviews do arrive with some guest details, such as last names, and your Worker throws those away before saving anything.
+Your Worker never asks Hospitable for messages, transactions or payouts. It asks for a reservation only when a guest signs in with its code, if you turned [guest sign-in](#widgets-for-signed-in-guests) on, and then shows that guest their own stay and keeps nothing: their details stay in your Worker's memory for a minute, never in its storage, and their browser doesn't keep them either. Never shown, even to the guest: other guests, your internal notes, your payout and fees, guests' phone numbers and emails, and "other details". Reviews do arrive with some guest details, such as last names, and your Worker throws those away before saving anything.
 
 Knowledge Hub topics often hold door codes, so your Worker shares none of them until you name the safe ones in `PUBLIC_GUIDE_TOPICS`.
 
@@ -154,7 +182,7 @@ What does become public, so check it once:
 
 For your visitors:
 
-- The widgets set no cookies and don't track anyone.
+- The widgets set no cookies and don't track anyone. A guest who signs in gets a sign-in token, kept in their browser for your Worker's address only, until three days after check-out or until they sign out.
 - To show a widget, a visitor's browser connects to your Worker (for the listing), to jsDelivr (for the widget code), to the servers where Hospitable keeps your photos, and to Google Fonts if you picked a Google font.
 - The browser keeps a copy of the listing data, so the widget still shows if your Worker can't be reached.
 - If your guests are in the EU, pick "Same as my website", System or Georgia as the font in the builder. In 2022 a German court ruled that loading Google Fonts without visitors' consent breaks EU privacy law (GDPR).
@@ -169,6 +197,11 @@ Change these in Cloudflare under Workers & Pages → hospitable-widgets → Sett
 | `PUBLIC_GUIDE_TOPICS` | The Knowledge Hub topics the Local guide widget may show, by name and separated by commas, for example `Local attractions, Where to eat`. | No topics are shown |
 | `CACHE_MINUTES` | How long a visitor's browser keeps widget data, from `0` (not at all) to `1440` (a day). Lower shows your changes to returning visitors sooner and uses more of your allowance. The builder shows the value your Worker uses. | `240` (4 hours) |
 | `SUBREQUEST_BUDGET` | How many calls to Hospitable one hourly refresh may make. Raise it to `900` on the Workers Paid plan. | `45` |
+| `GUEST_SECRET` | Turns on [guest sign-in](#widgets-for-signed-in-guests), with `GUEST_SITES`. At least 32 random characters; add it as a secret. Replacing it signs every guest out. | Guests can't sign in |
+| `GUEST_SITES` | The websites that may show guest widgets, separated by commas, such as `villakayu.com, www.villakayu.com`. `*` allows any website, which you only want with sample data. | Guests can't sign in |
+| `REVEAL_HOURS` | How many hours before check-in guests see the door code, Wi-Fi and check-in instructions, from `0` to `168` (a week). | `24` |
+| `GUEST_GUIDE_TOPICS` | Knowledge Hub topics the Guest guide shows signed-in guests, besides those in `PUBLIC_GUIDE_TOPICS`, such as `Arrival information, House manual`. | Only the public topics |
+| `WIDGET_URL` | Where widget pages on your Worker load the widget code from. Leave it out unless you host a copy of `widget.js` yourself. | jsDelivr, newest 1.x |
 | `BUILDER_URL` | Where your Worker's home page sends you. If you [run your own builder](https://github.com/agmadt/hospitable-widget-builder#run-your-own-builder), change it in `wrangler.jsonc` in your copy on GitHub rather than here, so updates keep it. | This project's builder |
 
 The hourly refresh isn't a setting here: its schedule lives in the `wrangler.jsonc` file. If you change it in the Cloudflare dashboard instead, the next update from GitHub puts it back to hourly.

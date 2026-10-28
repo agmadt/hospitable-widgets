@@ -51,7 +51,8 @@ export function createClient({ token, fetch: fetchImpl = fetch, budget = 45 }) {
     }
     if (!res.ok) {
       // The body is never passed on: it can echo request details.
-      throw new HospitableError(`Hospitable answered ${res.status} for ${path.replace(/[0-9a-f-]{36}/gi, ':id')}`, res.status);
+      // Ids and booking codes stay out of the logs.
+      throw new HospitableError(`Hospitable answered ${res.status} for ${path.replace(/[0-9a-f-]{36}/gi, ':id').replace(/^\/reservations\/[^/]+/, '/reservations/:code')}`, res.status);
     }
     try {
       return await res.json();
@@ -113,6 +114,17 @@ export function createClient({ token, fetch: fetchImpl = fetch, budget = 45 }) {
     async knowledgeHub(id) {
       const body = await get(`/properties/${encodeURIComponent(id)}/knowledge-hub`);
       return body?.data || {};
+    },
+
+    /** One reservation, by its UUID or the code guests see; null when Hospitable has none. */
+    async reservation(identifier, include) {
+      try {
+        const body = await get(`/reservations/${encodeURIComponent(identifier)}`, { include });
+        return body?.data && typeof body.data === 'object' && !Array.isArray(body.data) ? body.data : null;
+      } catch (err) {
+        if (err instanceof HospitableError && err.status === 404) return null;
+        throw err;
+      }
     },
 
     async user() {

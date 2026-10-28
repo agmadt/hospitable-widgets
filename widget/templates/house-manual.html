@@ -1,0 +1,22 @@
+<!--hw {"name":"House manual","blurb":"Your house manual from Hospitable, for guests who signed in","height":380,"guest":true,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"House manual"},
+ {"key":"empty_text","label":"When there is no house manual","type":"text","default":"Your host hasn’t added a house manual yet."},
+ {"key":"signin_text","label":"Before the guest signs in","type":"text","default":"Sign in with your booking to see this."},
+ {"key":"signin_label","label":"Sign-in button text","type":"text","default":"Sign in"},
+ {"key":"signin_url","label":"Sign-in button opens","type":"url","default":"","hint":"The page of your website with the Guest sign-in widget. Without it, the button is left out."}
+]} -->
+<style>
+.gs-out{display:grid;justify-items:center;gap:.7em;text-align:center;padding:calc(var(--hw-space) * .5) 0}
+.gs-out .hw-ico{width:2em;height:2em;color:var(--hw-accent)}
+.gs-out p{margin:0;color:var(--hw-muted)}
+.hm{white-space:pre-line;margin:0}
+</style>
+<section class="hw [[card]]">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {#signed_in}
+  <h2>[[heading]]</h2>
+  {#stay_house_manual}<p class="hm">{stay_house_manual}</p>{/stay_house_manual}
+  {^stay_house_manual}<p class="hw-muted">[[empty_text]]</p>{/stay_house_manual}
+  {/signed_in}
+  {^signed_in}<div class="gs-out"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><p>[[signin_text]]</p>[[#signin_url]]<a class="hw-btn" href="[[signin_url]]" target="_top">[[signin_label]]</a>[[/signin_url]]</div>{/signed_in}
+</section>

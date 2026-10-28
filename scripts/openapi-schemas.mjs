@@ -16,6 +16,8 @@ const ENDPOINTS = {
   '/properties/{uuid}/reviews': 'include=guest',
   '/properties/{uuid}/knowledge-hub': '',
   '/user': '',
+  // Guest sign-in and the data for signed-in guests (src/guest.js).
+  '/reservations/{identifier}': 'include=guest,properties,financials,smartlock_code',
 };
 
 const from = process.argv[2] || SOURCE;

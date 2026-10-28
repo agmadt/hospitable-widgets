@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadWidget } from './helpers/load-widget.js';
+import { GUEST_WIDGETS } from '../src/embed.js';
 
 const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../widget/templates');
 const TYPES = readdirSync(dir).filter((f) => f.endsWith('.html')).map((f) => f.slice(0, -5));
@@ -42,8 +43,9 @@ afterEach(() => {
 });
 
 describe('starter templates', () => {
-  it('has all 16', () => {
-    expect(TYPES).toHaveLength(16);
+  it('has all 24: 16 for any visitor, 8 for signed-in guests', () => {
+    expect(TYPES).toHaveLength(24);
+    expect(TYPES.filter((t) => T.parse(file(`${t}.html`)).meta.guest).sort()).toEqual([...GUEST_WIDGETS].sort());
   });
 
   it.each(TYPES)('%s: valid header, no builder tags left with default options', (type) => {

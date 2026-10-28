@@ -18,6 +18,8 @@ How Hospitable Listing Widgets works inside: the snippet and template format, th
 2. The Worker answers from a 60-second memory cache, then from KV. Only the first request for a data set calls Hospitable; after that, the hourly cron keeps it fresh.
 3. `widget.js` fills the template and renders it in a shadow root, so the website's CSS and the widget's CSS can't affect each other.
 
+Widgets for signed-in guests take one detour: the website shows the Worker's own page for the widget in an iframe ([Embed pages](#embed-pages)), and the guest's token and stay stay inside it ([Widgets for signed-in guests](#widgets-for-signed-in-guests)).
+
 The Deploy button asks only for the bindings listed under `cloudflare.bindings` in `package.json`, and every one listed there is required, so optional variables stay off that list. Variables added later in the dashboard survive redeploys because `wrangler.jsonc` sets `keep_vars`.
 
 ## Snippet format
@@ -105,16 +107,35 @@ Formatting is built into `widget.js`. Starter templates come through the `templa
 
 | Widget | JavaScript |
 | --- | --- |
-| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 8.2 KB: `widget.js` + `templates` |
-| Photo gallery | 10.8 KB: + `lightbox` (viewer with filmstrip) |
-| Availability calendar | 10.2 KB: + `calendar`, `pager` |
-| Reviews carousel | 9.9 KB: + `reviews`, `pager` |
+| Description, Key facts, Amenities, House rules, Sleeping, The space, Policies, Local guide, Also listed on, Meet your host, Property list, Rating summary | 8.5 KB: `widget.js` + `templates` |
+| Photo gallery | 11.0 KB: + `lightbox` (viewer with filmstrip) |
+| Availability calendar | 10.5 KB: + `calendar`, `pager` |
+| Reviews carousel | 10.2 KB: + `reviews`, `pager` |
+| Widgets for signed-in guests, on their embed page | 10.8 KB: + `guest` |
 
 `npm run size` prints the current numbers and writes `widget/sizes.json`, which the builder shows hosts. Modules and templates load from the same folder and the exact same version as `widget.js` (`@1` becomes, say, `@1.1.1`), so a cached `widget.js` never meets newer ones. Widgets mount as they come within 400 px of the screen, so a page whose widgets nobody scrolls to costs no Worker request, and widgets of the same property share one request (see [More than one widget](../README.md#more-than-one-widget) in the README).
 
 ### Events and API
 
 Each render fires a `hosp:render` event on the element; `detail.state` is `live`, `cached` (the visitor's last copy) or `snapshot` (a pre-v1.1 snippet's own data), and `data-hosp-state` on the element says the same, or `unavailable`. For builders and tests, `window.HospWidgets` has `render`, `renderTo`, `derive`, `fetchData`, `need`, `module` and `scan`, plus `analyze` and `plan` once `need(['analyze'])` has loaded.
+
+### Embed pages
+
+`GET /embed/<type>` is one starter template on a page of its own, for websites that show a widget in an iframe. The query becomes the snippet's attributes: `/embed/amenities?property=ID&options=…&style=…&amenities-limit=8` renders `<div data-hosp="amenities" data-hosp-worker="<this Worker>" data-hosp-property="ID" …>`, every value escaped. `template`, `worker`, `fallback`, `manual` and `eager` can't be set from the query, `lang` sets the page's language, and no HTML from the URL reaches the page, so hand-edited templates only work as snippets.
+
+The page loads `widget.js` from `WIDGET_URL` (jsDelivr's `@1` by default) under a strict policy: `default-src 'none'`, scripts only with the page's nonce (`'strict-dynamic'` lets `widget.js` add its modules), `connect-src 'self'` and the widget's own host. It tells the page around it its height with `postMessage({ type: 'hosp:height', height })`; Hospitable Pages' Embed block fits the frame to it. Public widgets may be framed by any website; widgets for signed-in guests (`GUEST_WIDGETS` in `src/embed.js`) only by `GUEST_SITES` and the builder.
+
+### Widgets for signed-in guests
+
+A guest signs in with a booking code and the last name or email on the booking, and every widget whose template reads the `stay` data set (fields starting with `stay_`, and `signed_in`) shows their stay. All of it is off until `GUEST_SECRET` (32+ characters) and `GUEST_SITES` are set; dummy mode has it on, for any website.
+
+- `POST /stay/login` with `{ code, check }` looks the booking up with `GET /v2/reservations/{code}?include=guest` (in capitals if it isn't found as typed). It answers `{ token, expires_at, first_name }`, or `401 no_match` (unknown code and wrong name look the same), `403 not_confirmed`, `403 stay_over` (more than 72 hours after check-out) or `429 too_many` (5 misses per code or 10 tries per address in 10 minutes, per Worker instance). It only answers requests whose `Origin` is the Worker's own.
+- The token is `base64url(JSON {r: reservation id, x: expiry})` and an HMAC-SHA256 of it with `GUEST_SECRET`. It lasts until 72 hours after check-out; a new secret signs everyone out.
+- `GET /stay` with `Authorization: Bearer <token>` reads the reservation (`include=guest,properties,financials,smartlock_code`, retried without `smartlock_code` if Hospitable refuses it), the property's details and, for the Guest guide, its Knowledge Hub. Results stay in the Worker's memory for a minute (five for the property), never in KV, and every answer is `no-store`. A cancelled stay answers `401 signed_out`.
+- Neither route sends CORS headers, so a browser lets only the Worker's own embed pages call them. In `widget.js`, the `guest` module refuses to run anywhere else, keeps the token in the embed page's `localStorage` under `hosp:guest` (partitioned by browsers per website that frames it), never keeps a copy of the stay, and re-renders every guest widget on the website when a `storage` event says the guest signed in or out.
+- Arrival details (`stay_door_code`, `stay_wifi_*`, `stay_checkin_instructions`) are only filled from `REVEAL_HOURS` (24) before check-in until check-out, on the server. `stay_guide` holds the topics in `PUBLIC_GUIDE_TOPICS` and `GUEST_GUIDE_TOPICS`.
+
+In a template, `<form data-hosp-signin>` with inputs named `code` and `check` signs in (`data-after` is the page to open afterwards, `data-msg-<error>` the host's own messages, `[data-hosp-signin-error]` shows them), `[data-hosp-signout]` signs out, and `[data-hosp-copy="…"]` copies its value. Without a Worker, in the builder's preview, the form and the sign-out button fire `hosp:signin` and `hosp:signout` on the element instead.
 
 ### Writing a module
 
@@ -205,6 +226,28 @@ Added by `widget.js`: per review `stars` (`★★★★☆`), `date_formatted`, 
 
 `host_name` (your company name if your Hospitable account is a business, otherwise your name) and `host_picture`. Added: `host_initial`.
 
+### `GET /stay`: a signed-in guest's stay
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `signed_in` | boolean | `false` (and nothing else) before the guest signs in |
+| `stay_guest_name`, `stay_code`, `stay_platform` | string | First name; the booking code; `Airbnb`, `Vrbo`, `Booking.com` or `Direct booking` |
+| `stay_property_id`, `stay_property_name`, `stay_property_photo` | string | The public name |
+| `stay_arrival_date`, `stay_departure_date` | `"YYYY-MM-DD"` | On the property's clock |
+| `stay_check_in`, `stay_check_out` | `"HH:MM"` | |
+| `stay_nights`, `stay_guests`, `stay_adults`, `stay_children`, `stay_infants`, `stay_pets` | number | |
+| `stay_phase` | string | `upcoming`, `arrival`, `staying`, `departure` or `over` |
+| `stay_days_to_arrival` | number | 0 from arrival day on |
+| `stay_access_open`, `stay_access_ended` | boolean | Whether arrival details show now; whether check-out has passed |
+| `stay_access_date`, `stay_access_time` | string | When they start showing, on the property's clock |
+| `stay_door_code`, `stay_wifi_name`, `stay_wifi_password`, `stay_checkin_instructions` | string or null | Only while `stay_access_open` |
+| `stay_address`, `stay_map_url` | string | The full address; a Google Maps link to its coordinates |
+| `stay_house_manual` | string | |
+| `stay_currency`, `stay_payment`, `stay_total` | | `stay_payment`: `{label, amount, kind}[]`, `kind` being `accommodation`, `fee`, `discount`, `adjustment` or `tax`; amounts in major units, what the guest paid |
+| `stay_guide` | `{title, items: {title, body}[]}[]` | As `guide`, for the topics guests may read |
+
+Added by `widget.js`: `stay_arrival_formatted`, `stay_departure_formatted`, `stay_check_in_formatted`, `stay_check_out_formatted`, `stay_nights_label`, `stay_party_label` (`2 adults, 1 child`), `stay_access_formatted`, `stay_countdown` (`In 3 days`, `Today`…), `stay_is_<phase>`, and per payment line `formatted` and `is_<kind>`, plus `stay_total_formatted`.
+
 ### `GET /api/properties`
 
 `properties`: `{id, property_name, photo, city, country, max_guests, bedrooms, currency, price_from}[]`, listed properties only. Added per card: `price_from_formatted`, `guests_label`, `bedrooms_label`; and `property_count`.
@@ -221,7 +264,9 @@ The sample data has the same shape as Hospitable's API:
 
 - Every response follows the response schemas of Hospitable's [OpenAPI spec](https://developer.hospitable.com), copied into [`test/fixtures/hospitable-openapi.json`](../test/fixtures/hospitable-openapi.json). A test checks every sample response against them and fails on any field the spec doesn't list, any wrong type and any missing required field. `npm run openapi` refreshes the copy from Hospitable's published spec.
 - Values come from the spec's own examples wherever they work in a widget: the "Relaxing Villa near the sea" (ID `550e8400-e29b-41d4-a716-446655440000`), its policies, fees and deposits, the Berlin address and Airbnb listing of the second property, the user (Johny Doe & Co), the review "Great place we will be back!" and the "Arrival information" topic. Photo URLs (the spec's don't load), `"string"` placeholders and dates are the only replaced values.
-- Private fields (Wi-Fi, door codes, street addresses, private feedback, iCal links) hold `SECRET` values. The data goes through the same code as real data, and the tests check that none of these values comes out of any endpoint or reaches KV.
+- Private fields (private feedback, iCal links, internal notes, the host's payout, guests' phone numbers) hold `SECRET` values. The data goes through the same code as real data, and the tests check that none of these values comes out of any endpoint or reaches KV.
+- What only a signed-in guest may see (Wi-Fi, the street address, check-in instructions, house manuals, door codes) holds realistic values, so the guest widgets look right, and the tests check those never reach a public endpoint or KV.
+- Four sample bookings are dated from today (`dummy.reservations`): `HM4CXJ4KPX` (Moore) arrives today at the villa, `4182736455` (Becker, or `lbecker.482917@guest.booking.com`) in twelve days at the loft, `HMCANCEL22` is cancelled and `DIR-20417` ended ten days ago.
 
 ## Limits in detail
 
@@ -247,20 +292,22 @@ npm test                         # Worker (dummy and live, with a fake Hospitabl
 npm run size                     # download size of widget.js and each module
 ```
 
-Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/scheduled"` while `npm run dev` runs. To try live mode, put a real token in `.dev.vars`.
+Trigger the cron locally with `curl "http://127.0.0.1:8787/cdn-cgi/local/scheduled"` while `npm run dev` runs. To try live mode, put a real token in `.dev.vars`. Embed pages load `widget.js` from jsDelivr unless `WIDGET_URL` says otherwise; the workspace's `node dev.mjs` points it at the builder's copy of the local file.
 
 | Path | What it is |
 | --- | --- |
 | `src/index.js` | Routes and the cron entry point |
 | `src/listings.js` | Reading (memory → KV → Hospitable) and the hourly refresh |
 | `src/hospitable.js` | Read-only Hospitable API client with a subrequest budget |
-| `src/normalize.js` | API responses → public widget data (the allowlist) |
+| `src/normalize.js` | API responses → public widget data (the allowlist), and a signed-in guest's stay |
+| `src/guest.js` | Guest sign-in: settings, tokens, `/stay/login` and `/stay` |
+| `src/embed.js` | `/embed/<type>`: one widget on a page of its own, for iframes |
 | `src/amenities.js` | Readable labels for amenity codes |
 | `src/dummy.js`, `src/fixtures/dummy.json` | Dummy mode |
 | `src/store.js` | Memory cache, change detection, in-memory KV |
 | `widget/widget.js` | The script on the host's page: template engine, formatting, data, rendering, module loader |
-| `widget/modules/*.js` | Loaded on demand: `templates`, `calendar`, `reviews`, `lightbox`, `pager`, and `analyze` for hand-written snippets |
-| `widget/templates/*.html` | The 16 starter templates and their options (a `<!--hw {…} -->` header), plus `_base.css` |
+| `widget/modules/*.js` | Loaded on demand: `templates`, `calendar`, `reviews`, `lightbox`, `pager`, `guest` for signed-in guests, and `analyze` for hand-written snippets |
+| `widget/templates/*.html` | The 24 starter templates (8 for signed-in guests, marked `"guest": true`) and their options (a `<!--hw {…} -->` header), plus `_base.css` |
 | `widget/sizes.json` | Download size of each file, written by `npm run size`, checked by CI |
 | `scripts/warm.mjs` | Run by the Release workflow on each tag: warms jsDelivr and purges `@1` |
 | `scripts/update-copy.mjs`, `docs/update-workflow.yml` | The update button hosts add to their copy |

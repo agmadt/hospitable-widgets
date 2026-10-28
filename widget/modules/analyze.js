@@ -9,6 +9,7 @@
 
   H.define('analyze', [], function (api) {
     var DATASETS = [
+      ['stay', /^(stay_|signed_in$)/],
       ['calendar', /^(calendar|months|price_from|min_stay|next_available|available_nights)/],
       ['reviews', /^(reviews|rating_|review_count)/],
       ['guide', /^guide/],
@@ -19,7 +20,7 @@
     // Fields that hold lists of objects. Names inside a section over one of
     // them belong to its items: a property card's {price_from} does not mean
     // the page needs a calendar.
-    var LIST_FIELDS = /^(properties|photos|photos_all|amenities_all|rooms|fees|channels|reviews|calendar|months|guide|rules|weeks|days|items)$/;
+    var LIST_FIELDS = /^(properties|photos|photos_all|amenities_all|rooms|fees|channels|reviews|calendar|months|guide|rules|weeks|days|items|stay_payment|stay_guide)$/;
 
     function rootNames(nodes, names, inList) {
       for (var i = 0; i < nodes.length; i++) {
@@ -44,7 +45,8 @@
         if (hit) sets[hit] = true;
         else if (!/^_/.test(n)) needsProperty = true;
       });
-      if (needsProperty || sets.calendar || sets.reviews || sets.guide) sets.property = true;
+      // A guest's stay carries everything its widgets show.
+      if (!sets.stay && (needsProperty || sets.calendar || sets.reviews || sets.guide)) sets.property = true;
       return { fields: names, datasets: Object.keys(sets) };
     }
 
@@ -53,6 +55,7 @@
       var mods = [];
       if (sets.indexOf('calendar') !== -1) mods.push('calendar');
       if (sets.indexOf('reviews') !== -1) mods.push('reviews');
+      if (sets.indexOf('stay') !== -1) mods.push('guest');
       if (/data-hosp-(lightbox|open)/.test(template)) mods.push('lightbox');
       if (/data-hosp-pager/.test(template)) mods.push('pager');
       return mods;

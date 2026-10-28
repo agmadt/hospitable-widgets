@@ -1,7 +1,7 @@
 {
  "source": "https://api.stoplight.io/projects/cHJqOjI1MDgxOA/branches/main/export/V2/public.json",
  "version": "2.0",
- "copied": "2026-10-19",
+ "copied": "2026-10-26",
  "queries": {
   "/properties": "include=details,bookings,listings",
   "/properties/{uuid}": "include=details,bookings,listings",
@@ -9,7 +9,8 @@
   "/properties/{uuid}/calendar": "start_date, end_date",
   "/properties/{uuid}/reviews": "include=guest",
   "/properties/{uuid}/knowledge-hub": "",
-  "/user": ""
+  "/user": "",
+  "/reservations/{identifier}": "include=guest,properties,financials,smartlock_code"
  },
  "schemas": {
   "/properties": {
@@ -2483,6 +2484,1514 @@
        }
       }
      }
+    }
+   }
+  },
+  "/reservations/{identifier}": {
+   "type": "object",
+   "properties": {
+    "data": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "id": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "conversation_id": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "conversation_language": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "conversation_language_code": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "platform": {
+         "type": "string",
+         "enum": [
+          "airbnb",
+          "homeaway",
+          "booking",
+          "direct",
+          "manual"
+         ],
+         "readOnly": true
+        },
+        "platform_id": {
+         "type": "string"
+        },
+        "booking_date": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "arrival_date": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "departure_date": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "nights": {
+         "type": "integer"
+        },
+        "check_in": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "check_out": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "last_message_at": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "status": {
+         "type": "string",
+         "x-deprecated": true
+        },
+        "reservation_status": {
+         "type": "object",
+         "properties": {
+          "current": {
+           "type": "object",
+           "properties": {
+            "category": {
+             "type": "string",
+             "enum": [
+              "request",
+              "accepted",
+              "cancelled",
+              "not accepted",
+              "unknown",
+              "checkpoint"
+             ]
+            },
+            "sub_category": {
+             "type": "string",
+             "enum": [
+              "pending verification",
+              "awaiting approval",
+              "request to book",
+              "request for payment",
+              "declined",
+              "withdrawn",
+              "expired",
+              "checkpoint",
+              "voided"
+             ]
+            }
+           },
+           "required": [
+            "category",
+            "sub_category"
+           ]
+          },
+          "history": {
+           "type": "array",
+           "items": {
+            "allOf": [
+             {
+              "type": "object",
+              "properties": {
+               "category": {
+                "type": "string",
+                "enum": [
+                 "request",
+                 "accepted",
+                 "cancelled",
+                 "not accepted",
+                 "unknown",
+                 "checkpoint"
+                ]
+               },
+               "sub_category": {
+                "type": "string",
+                "enum": [
+                 "pending verification",
+                 "awaiting approval",
+                 "request to book",
+                 "request for payment",
+                 "declined",
+                 "withdrawn",
+                 "expired",
+                 "checkpoint",
+                 "voided"
+                ]
+               }
+              },
+              "required": [
+               "category",
+               "sub_category"
+              ]
+             },
+             {
+              "type": "object",
+              "properties": {
+               "changed_at": {
+                "type": "string"
+               }
+              },
+              "required": [
+               "changed_at"
+              ]
+             }
+            ]
+           }
+          }
+         },
+         "required": [
+          "current",
+          "history"
+         ]
+        },
+        "status_history": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "category": {
+            "type": "string"
+           },
+           "sub_category": {
+            "type": [
+             "string",
+             "null"
+            ]
+           },
+           "changed_at": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "category",
+           "sub_category",
+           "changed_at"
+          ]
+         },
+         "x-deprecated": true
+        },
+        "guests": {
+         "type": "object",
+         "properties": {
+          "total": {
+           "type": "integer",
+           "default": 0
+          },
+          "adult_count": {
+           "type": "integer",
+           "default": 0
+          },
+          "child_count": {
+           "type": "integer",
+           "default": 0
+          },
+          "infant_count": {
+           "type": "integer",
+           "default": 0
+          },
+          "pet_count": {
+           "type": "integer",
+           "default": 0
+          }
+         },
+         "required": [
+          "total",
+          "adult_count",
+          "child_count",
+          "infant_count",
+          "pet_count"
+         ]
+        },
+        "issue_alert": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "stay_type": {
+         "type": "string",
+         "enum": [
+          "guest_stay",
+          "owner_stay"
+         ]
+        },
+        "owner_stay": {
+         "type": [
+          "object",
+          "null"
+         ],
+         "properties": {
+          "schedule_cleaning": {
+           "type": "boolean"
+          }
+         }
+        },
+        "notes": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "site_id": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       },
+       "required": [
+        "id",
+        "conversation_id",
+        "platform",
+        "platform_id",
+        "booking_date",
+        "arrival_date",
+        "departure_date",
+        "nights",
+        "check_in",
+        "check_out",
+        "last_message_at",
+        "status",
+        "reservation_status",
+        "status_history",
+        "guests"
+       ]
+      },
+      {
+       "type": "object",
+       "properties": {
+        "financials": {
+         "type": "object",
+         "properties": {
+          "guest": {
+           "type": "object",
+           "properties": {
+            "accommodation": {
+             "allOf": [
+              {
+               "type": "object",
+               "properties": {
+                "amount": {
+                 "type": "integer"
+                },
+                "formatted": {
+                 "type": "string"
+                }
+               }
+              },
+              {
+               "type": "object",
+               "properties": {
+                "label": {
+                 "type": "string"
+                },
+                "category": {
+                 "const": "Accommodation"
+                }
+               }
+              }
+             ]
+            },
+            "fees": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "type": "string",
+                  "enum": [
+                   "Guest fees",
+                   "Other fee",
+                   "Service fees"
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "discounts": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "const": "Discounts"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "taxes": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "type": "string",
+                  "enum": [
+                   "Host Tax",
+                   "Taxes"
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "adjustments": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "const": "Total payouts"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "total_price": {
+             "allOf": [
+              {
+               "type": "object",
+               "properties": {
+                "amount": {
+                 "type": "integer"
+                },
+                "formatted": {
+                 "type": "string"
+                }
+               }
+              },
+              {
+               "type": "object",
+               "properties": {
+                "label": {
+                 "type": "string"
+                },
+                "category": {
+                 "const": "Guest total price"
+                }
+               }
+              }
+             ]
+            }
+           },
+           "required": [
+            "fees",
+            "discounts",
+            "taxes",
+            "adjustments"
+           ]
+          },
+          "host": {
+           "type": "object",
+           "properties": {
+            "accommodation": {
+             "allOf": [
+              {
+               "type": "object",
+               "properties": {
+                "amount": {
+                 "type": "integer"
+                },
+                "formatted": {
+                 "type": "string"
+                }
+               }
+              },
+              {
+               "type": "object",
+               "properties": {
+                "label": {
+                 "type": "string"
+                },
+                "category": {
+                 "const": "Accommodation"
+                }
+               }
+              }
+             ]
+            },
+            "accommodation_breakdown": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string",
+                  "format": "date"
+                 },
+                 "category": {
+                  "const": "Accommodation"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "guest_fees": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "type": "string",
+                  "enum": [
+                   "Guest fees",
+                   "Other fees",
+                   "Service fees"
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "host_fees": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "const": "Service fees"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "discounts": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "const": "Discounts"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "adjustments": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "const": "Total payouts"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "taxes": {
+             "type": "array",
+             "items": {
+              "allOf": [
+               {
+                "type": "object",
+                "properties": {
+                 "amount": {
+                  "type": "integer"
+                 },
+                 "formatted": {
+                  "type": "string"
+                 }
+                }
+               },
+               {
+                "type": "object",
+                "properties": {
+                 "label": {
+                  "type": "string"
+                 },
+                 "category": {
+                  "type": "string",
+                  "enum": [
+                   "Host Tax",
+                   "Collect at check-in Tax"
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "revenue": {
+             "allOf": [
+              {
+               "type": "object",
+               "properties": {
+                "amount": {
+                 "type": "integer"
+                },
+                "formatted": {
+                 "type": "string"
+                }
+               }
+              },
+              {
+               "type": "object",
+               "properties": {
+                "label": {
+                 "type": "string"
+                },
+                "category": {
+                 "const": "Revenue"
+                }
+               }
+              }
+             ]
+            }
+           },
+           "required": [
+            "guest_fees",
+            "host_fees",
+            "discounts",
+            "adjustments",
+            "taxes"
+           ]
+          },
+          "currency": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "currency"
+         ]
+        },
+        "properties": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "id": {
+            "type": "string"
+           },
+           "name": {
+            "type": "string"
+           },
+           "public_name": {
+            "type": "string"
+           },
+           "picture": {
+            "type": "string"
+           },
+           "address": {
+            "type": "object",
+            "properties": {
+             "number": {
+              "type": "string"
+             },
+             "street": {
+              "type": "string"
+             },
+             "city": {
+              "type": "string"
+             },
+             "state": {
+              "type": "string"
+             },
+             "country": {
+              "type": "string"
+             },
+             "country_name": {
+              "type": "string"
+             },
+             "postcode": {
+              "type": "string"
+             },
+             "coordinates": {
+              "type": "object",
+              "properties": {
+               "latitude": {
+                "type": "string",
+                "default": 0
+               },
+               "longitude": {
+                "type": "string",
+                "default": 0
+               }
+              },
+              "required": [
+               "latitude",
+               "longitude"
+              ]
+             },
+             "display": {
+              "type": "string"
+             }
+            },
+            "required": [
+             "number",
+             "street",
+             "city",
+             "state",
+             "country",
+             "country_name",
+             "postcode",
+             "coordinates",
+             "display"
+            ]
+           },
+           "timezone": {
+            "type": "string"
+           },
+           "listed": {
+            "type": "boolean",
+            "default": true
+           },
+           "amenities": {
+            "type": "array",
+            "items": {
+             "type": "string"
+            }
+           },
+           "description": {
+            "type": "string"
+           },
+           "summary": {
+            "type": "string"
+           },
+           "check-in": {
+            "type": "string"
+           },
+           "check-out": {
+            "type": "string"
+           },
+           "currency": {
+            "type": "string"
+           },
+           "capacity": {
+            "type": "object",
+            "properties": {
+             "max": {
+              "type": [
+               "integer",
+               "null"
+              ],
+              "default": 0
+             },
+             "bedrooms": {
+              "type": [
+               "integer",
+               "null"
+              ],
+              "default": 0
+             },
+             "beds": {
+              "type": [
+               "number",
+               "null"
+              ],
+              "default": 0
+             },
+             "bathrooms": {
+              "type": [
+               "number",
+               "null"
+              ],
+              "default": 0
+             }
+            }
+           },
+           "room_details": {
+            "type": "array",
+            "items": {
+             "type": "object",
+             "properties": {
+              "type": {
+               "type": "string"
+              },
+              "beds": {
+               "type": "array",
+               "items": {
+                "type": "object",
+                "properties": {
+                 "type": {
+                  "type": "string"
+                 },
+                 "quantity": {
+                  "type": "integer",
+                  "default": 0
+                 }
+                },
+                "required": [
+                 "type",
+                 "quantity"
+                ]
+               }
+              }
+             },
+             "required": [
+              "type",
+              "beds"
+             ]
+            }
+           },
+           "house_rules": {
+            "type": "object",
+            "properties": {
+             "pets_allowed": {
+              "type": "boolean",
+              "default": true
+             },
+             "smoking_allowed": {
+              "type": "boolean",
+              "default": true
+             },
+             "events_allowed": {},
+             "children_allowed": {
+              "type": [
+               "boolean",
+               "null"
+              ]
+             },
+             "infants_allowed": {
+              "type": [
+               "boolean",
+               "null"
+              ]
+             }
+            },
+            "required": [
+             "pets_allowed",
+             "smoking_allowed",
+             "events_allowed",
+             "children_allowed",
+             "infants_allowed"
+            ]
+           },
+           "listings": {
+            "type": "array",
+            "items": {
+             "type": "object",
+             "properties": {
+              "platform": {
+               "type": "string"
+              },
+              "platform_id": {
+               "type": "string"
+              },
+              "platform_user_id": {
+               "type": "string"
+              },
+              "co_hosts": {
+               "type": "array",
+               "items": {
+                "type": "object",
+                "properties": {
+                 "user_id": {
+                  "type": "string"
+                 },
+                 "channel_name": {
+                  "type": "string"
+                 },
+                 "name": {
+                  "type": "string"
+                 }
+                }
+               }
+              },
+              "platform_name": {
+               "type": "string"
+              },
+              "platform_email": {
+               "type": "string"
+              }
+             },
+             "required": [
+              "platform",
+              "platform_id",
+              "platform_user_id",
+              "co_hosts"
+             ]
+            }
+           },
+           "ical_imports": {
+            "type": "array",
+            "items": {
+             "type": "object",
+             "properties": {
+              "id": {
+               "type": "string"
+              },
+              "url": {
+               "type": "string"
+              },
+              "name": {
+               "type": [
+                "string",
+                "null"
+               ]
+              },
+              "host": {
+               "type": "object",
+               "properties": {
+                "first_name": {
+                 "type": [
+                  "string",
+                  "null"
+                 ]
+                },
+                "last_name": {
+                 "type": [
+                  "string",
+                  "null"
+                 ]
+                }
+               },
+               "required": [
+                "first_name",
+                "last_name"
+               ]
+              },
+              "last_sync_at": {
+               "type": [
+                "string",
+                "null"
+               ]
+              },
+              "disconnected_at": {
+               "type": [
+                "string",
+                "null"
+               ]
+              }
+             },
+             "required": [
+              "id",
+              "url",
+              "name",
+              "host",
+              "last_sync_at",
+              "disconnected_at"
+             ]
+            }
+           },
+           "tags": {
+            "type": "array",
+            "items": {
+             "type": "string"
+            }
+           },
+           "property_type": {
+            "type": "string"
+           },
+           "room_type": {
+            "type": "string"
+           },
+           "calendar_restricted": {
+            "type": "boolean"
+           },
+           "ical_feed": {
+            "type": "string"
+           },
+           "parent_child": {
+            "type": [
+             "object",
+             "null"
+            ],
+            "properties": {
+             "type": {
+              "type": "string",
+              "enum": [
+               "parent",
+               "child"
+              ]
+             },
+             "parent": {
+              "type": [
+               "string",
+               "null"
+              ]
+             },
+             "children": {
+              "type": "array",
+              "items": {
+               "type": "string",
+               "format": "uuid"
+              }
+             },
+             "siblings": {
+              "type": "array",
+              "items": {
+               "type": "string",
+               "format": "uuid"
+              }
+             }
+            }
+           },
+           "owners": {
+            "type": "array",
+            "items": {
+             "type": "object",
+             "properties": {
+              "id": {
+               "type": [
+                "string",
+                "null"
+               ],
+               "format": "uuid"
+              },
+              "type": {
+               "type": "string",
+               "enum": [
+                "individual",
+                "company",
+                null
+               ]
+              },
+              "name": {
+               "type": [
+                "string",
+                "null"
+               ]
+              },
+              "first_name": {
+               "type": [
+                "string",
+                "null"
+               ]
+              },
+              "starts_at": {
+               "type": "string",
+               "format": "date"
+              },
+              "ends_at": {
+               "type": [
+                "string",
+                "null"
+               ],
+               "format": "date"
+              },
+              "is_current": {
+               "type": "boolean"
+              }
+             },
+             "required": [
+              "starts_at",
+              "is_current"
+             ]
+            }
+           }
+          },
+          "required": [
+           "id",
+           "name",
+           "public_name",
+           "picture",
+           "address",
+           "timezone",
+           "listed",
+           "amenities",
+           "description",
+           "summary",
+           "check-in",
+           "check-out",
+           "currency",
+           "capacity",
+           "room_details",
+           "house_rules",
+           "listings",
+           "tags",
+           "property_type",
+           "room_type",
+           "calendar_restricted"
+          ]
+         }
+        },
+        "listings": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "platform": {
+            "type": "string"
+           },
+           "platform_id": {
+            "type": "string"
+           },
+           "platform_name": {
+            "type": "string"
+           },
+           "platform_email": {
+            "type": "string"
+           }
+          }
+         }
+        },
+        "guest": {
+         "type": "object",
+         "properties": {
+          "id": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "profile_picture": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "location": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "first_name": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "last_name": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "email": {
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "phone_numbers": {
+           "type": [
+            "array",
+            "null"
+           ],
+           "items": {
+            "type": "string"
+           }
+          }
+         }
+        },
+        "user": {
+         "type": "object",
+         "properties": {
+          "id": {
+           "type": "string",
+           "format": "uuid"
+          },
+          "email": {
+           "type": "string",
+           "format": "email"
+          },
+          "name": {
+           "type": "string"
+          }
+         }
+        },
+        "review": {
+         "type": "null",
+         "oneOf": [
+          {
+           "type": "object",
+           "properties": {
+            "id": {
+             "type": "string",
+             "format": "uuid"
+            },
+            "platform": {
+             "type": "string",
+             "enum": [
+              "airbnb",
+              "direct",
+              "vrbo",
+              "booking"
+             ]
+            },
+            "public": {
+             "type": "object",
+             "properties": {
+              "rating": {
+               "type": "integer",
+               "minimum": 1,
+               "maximum": 5
+              },
+              "review": {
+               "type": "string"
+              },
+              "response": {
+               "type": "string"
+              }
+             },
+             "required": [
+              "rating",
+              "review",
+              "response"
+             ]
+            },
+            "private": {
+             "type": "object",
+             "properties": {
+              "feedback": {
+               "type": "string"
+              },
+              "detailed_ratings": {
+               "type": "array",
+               "items": {
+                "type": "object",
+                "properties": {
+                 "type": {
+                  "type": "string",
+                  "enum": [
+                   "cleanliness",
+                   "communication",
+                   "location",
+                   "checkin",
+                   "accuracy",
+                   "value"
+                  ]
+                 },
+                 "rating": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                 },
+                 "comment": {
+                  "type": "string"
+                 }
+                }
+               }
+              }
+             },
+             "required": [
+              "feedback"
+             ]
+            },
+            "responded_at": {
+             "type": "string",
+             "format": "date-time"
+            },
+            "reviewed_at": {
+             "type": "string",
+             "format": "date-time"
+            },
+            "can_respond": {
+             "type": "boolean"
+            },
+            "guest": {
+             "type": "object",
+             "properties": {
+              "first_name": {
+               "type": "string"
+              },
+              "last_name": {
+               "type": "string"
+              },
+              "language": {
+               "type": "string"
+              }
+             },
+             "required": [
+              "first_name",
+              "last_name"
+             ]
+            },
+            "reservation": {
+             "type": "object",
+             "properties": {
+              "id": {
+               "type": "string",
+               "format": "uuid"
+              },
+              "code": {
+               "type": "string"
+              },
+              "check_in": {
+               "type": "string",
+               "format": "date-time"
+              },
+              "check_out": {
+               "type": "string",
+               "format": "date-time"
+              }
+             },
+             "required": [
+              "id",
+              "code",
+              "check_in",
+              "check_out"
+             ]
+            },
+            "property": {
+             "type": "object",
+             "properties": {
+              "id": {
+               "type": "string",
+               "format": "uuid"
+              },
+              "name": {
+               "type": "string"
+              },
+              "public_name": {
+               "type": "string"
+              }
+             },
+             "required": [
+              "id",
+              "name",
+              "public_name"
+             ]
+            },
+            "listing": {
+             "type": "object",
+             "properties": {
+              "platform": {
+               "type": "string"
+              },
+              "platform_id": {
+               "type": "string"
+              }
+             },
+             "required": [
+              "platform",
+              "platform_id"
+             ]
+            }
+           },
+           "required": [
+            "id",
+            "platform",
+            "public",
+            "private"
+           ]
+          },
+          {
+           "type": "null"
+          }
+         ]
+        },
+        "issue_alert": {
+         "type": "string",
+         "default": null
+        },
+        "smartlock_code": {
+         "type": "string"
+        },
+        "agreements": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "properties": {
+           "id": {
+            "type": "string",
+            "format": "uuid"
+           },
+           "reservation_id": {
+            "type": "string",
+            "format": "uuid"
+           },
+           "reservation_code": {
+            "type": "string"
+           },
+           "name": {
+            "type": "string"
+           },
+           "type": {
+            "const": "rental_agreement"
+           },
+           "status": {
+            "type": "string",
+            "enum": [
+             "unsigned",
+             "signed"
+            ]
+           },
+           "required": {
+            "type": "boolean"
+           },
+           "created_at": {
+            "type": "string",
+            "format": "date-time"
+           },
+           "signed_at": {
+            "type": [
+             "string",
+             "null"
+            ],
+            "format": "date-time"
+           }
+          },
+          "required": [
+           "id",
+           "reservation_code",
+           "name",
+           "type",
+           "status",
+           "required",
+           "created_at",
+           "signed_at"
+          ]
+         }
+        }
+       }
+      }
+     ]
     }
    }
   }

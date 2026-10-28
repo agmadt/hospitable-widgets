@@ -1,4 +1,4 @@
-/*! Hospitable Listing Widgets v1.2.0 | MIT | github.com/agmadt/hospitable-widgets */
+/*! Hospitable Listing Widgets v1.3.0 | MIT | github.com/agmadt/hospitable-widgets */
 // The core: finds each widget (data-hosp or data-hosp-template), fetches its data from
 // the host's Worker (one request per widget), fills the template and renders
 // it into a shadow root. Formatting is built in; calendar, reviews, the photo
@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.0';
 
   if (window.HospWidgets && window.HospWidgets.version) {
     // Loaded twice (two snippets on one page): reuse the first copy.
@@ -175,7 +175,7 @@
   // define(), so it loads anywhere a <script> does.
   // ---------------------------------------------------------------------------
 
-  var MODULE_ORDER = ['format', 'calendar', 'reviews', 'lightbox', 'pager'];
+  var MODULE_ORDER = ['format', 'guest', 'calendar', 'reviews', 'lightbox', 'pager'];
   var modules = Object.create(null);
   var pending = Object.create(null);
 
@@ -436,7 +436,7 @@
 
     return {
       derive: derive,
-      fmt: { plural: plural, titleCase: titleCase, money: money, parseDate: parseDate, isoDay: isoDay, date: date, stars: stars, num: num, setDefault: setDefault, copy: copy, today: today }
+      fmt: { plural: plural, titleCase: titleCase, money: money, parseDate: parseDate, isoDay: isoDay, date: date, time: time, stars: stars, num: num, setDefault: setDefault, copy: copy, today: today }
     };
   }
 
@@ -482,7 +482,7 @@
     var base = workerBase(worker);
     var sets = datasets && datasets.length ? datasets : ['property'];
     var urls = [];
-    var perProperty = sets.some(function (s) { return s !== 'host' && s !== 'properties'; });
+    var perProperty = sets.some(function (s) { return s !== 'host' && s !== 'properties' && s !== 'stay'; });
     if (perProperty && !propertyId) throw new Error('data-hosp-property is missing');
     // A host-only widget that names a property shares that property's request.
     if (perProperty || (propertyId && sets.indexOf('host') !== -1)) {
@@ -491,10 +491,13 @@
       urls.push(base + '/api/host');
     }
     if (sets.indexOf('properties') !== -1) urls.push(base + '/api/properties');
+    if (!urls.length) throw new Error('no public data to load');
     return urls;
   }
 
   function fetchData(worker, propertyId, datasets) {
+    // A signed-in guest's stay comes through the guest module, with their token, and is never kept.
+    if ((datasets || []).indexOf('stay') !== -1) return need(['guest']).then(function () { return modules.guest.load(workerBase(worker)); });
     var urls;
     try {
       urls = dataUrls(worker, propertyId, datasets);

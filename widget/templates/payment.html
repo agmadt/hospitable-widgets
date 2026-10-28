@@ -1,0 +1,31 @@
+<!--hw {"name":"Payment summary","blurb":"What the guest paid: nights, fees, taxes and the total","height":400,"guest":true,"options":[
+ {"key":"heading","label":"Heading","type":"text","default":"Your payment"},
+ {"key":"total_label","label":"Total","type":"text","default":"Total"},
+ {"key":"show_code","label":"Show the booking code","type":"toggle","default":"on"},
+ {"key":"signin_text","label":"Before the guest signs in","type":"text","default":"Sign in with your booking to see this."},
+ {"key":"signin_label","label":"Sign-in button text","type":"text","default":"Sign in"},
+ {"key":"signin_url","label":"Sign-in button opens","type":"url","default":"","hint":"The page of your website with the Guest sign-in widget. Without it, the button is left out."}
+]} -->
+<style>
+.gs-out{display:grid;justify-items:center;gap:.7em;text-align:center;padding:calc(var(--hw-space) * .5) 0}
+.gs-out .hw-ico{width:2em;height:2em;color:var(--hw-accent)}
+.gs-out p{margin:0;color:var(--hw-muted)}
+.py-code{color:var(--hw-muted);margin-top:-.4em}
+.py table{width:100%;border-collapse:collapse}
+.py td{padding:.6em 0;border-bottom:1px solid var(--hw-line)}
+.py td:last-child{text-align:right;white-space:nowrap;padding-left:1em;font-variant-numeric:tabular-nums}
+.py .off td:last-child{color:var(--hw-accent)}
+.py .tot td{border-bottom:0;padding-top:.9em;font-weight:700;font-size:1.1em}
+</style>
+<section class="hw [[card]] py">
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  {#signed_in}
+  <h2>[[heading]]</h2>
+  [[#show_code]]{#stay_code}<p class="py-code">{stay_code} · {stay_platform}</p>{/stay_code}[[/show_code]]
+  <table>
+    <!--{#stay_payment}--><tr class="{#is_discount}off{/is_discount}"><td>{label}</td><td>{formatted}</td></tr><!--{/stay_payment}-->
+    <!--{#stay_total_formatted}--><tr class="tot"><td>[[total_label]]</td><td>{stay_total_formatted}</td></tr><!--{/stay_total_formatted}-->
+  </table>
+  {/signed_in}
+  {^signed_in}<div class="gs-out"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><p>[[signin_text]]</p>[[#signin_url]]<a class="hw-btn" href="[[signin_url]]" target="_top">[[signin_label]]</a>[[/signin_url]]</div>{/signed_in}
+</section>

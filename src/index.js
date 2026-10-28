@@ -1,8 +1,11 @@
 // Hospitable Listing Widgets: the Worker.
 // It only reads from Hospitable, refreshes once an hour, and only hands out
-// public listing data.
+// public listing data, except to a guest who signed in with their booking
+// (src/guest.js), who sees their own stay.
 
 import { Listings, NotFound, Unavailable, isDummy } from './listings.js';
+import { guestStatus, handleGuest } from './guest.js';
+import { handleEmbed } from './embed.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -64,9 +67,10 @@ async function api(route, id, url, env, listings) {
     case 'list': {
       const list = await listings.list({ widget: !fresh });
       const status = fresh && listings.mode === 'live' ? publicStatus(await listings.status()) : undefined;
-      // The builder shows hosts how long visitors' browsers keep the data.
+      // The builder shows hosts how long visitors' browsers keep the data, and whether guests can sign in.
       const cache_minutes = fresh ? cacheMinutes(env) : undefined;
-      return data({ updated_at: list.updated_at, status, cache_minutes, properties: list.properties }, env, fresh);
+      const guest = fresh ? guestStatus(env) : undefined;
+      return data({ updated_at: list.updated_at, status, cache_minutes, guest, properties: list.properties }, env, fresh);
     }
     case 'property': {
       // ?include=calendar,reviews,guide,host folds the other data sets into this
@@ -114,6 +118,10 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
+
+    if (path === '/stay' || path === '/stay/login') return handleGuest(request, url, path, env);
+    const embed = /^\/embed\/([^/]+)$/.exec(path);
+    if (embed) return handleEmbed(request, url, decodeURIComponent(embed[1]), env);
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     if (request.method !== 'GET' && request.method !== 'HEAD') {

@@ -1,0 +1,39 @@
+<!--hw {"name":"Your stay","blurb":"Dates, times, guests and booking code, with a countdown","height":460,"guest":true,"options":[
+ {"key":"greeting","label":"Greeting","type":"text","default":"Hi {name}","tokens":{"name":"stay_guest_name"}},
+ {"key":"show_photo","label":"Show the property photo","type":"toggle","default":"on"},
+ {"key":"show_code","label":"Show the booking code","type":"toggle","default":"on"},
+ {"key":"show_signout","label":"Show a sign-out link","type":"toggle","default":"on"},
+ {"key":"signin_text","label":"Before the guest signs in","type":"text","default":"Sign in with your booking to see this."},
+ {"key":"signin_label","label":"Sign-in button text","type":"text","default":"Sign in"},
+ {"key":"signin_url","label":"Sign-in button opens","type":"url","default":"","hint":"The page of your website with the Guest sign-in widget. Without it, the button is left out."}
+]} -->
+<style>
+.gs-out{display:grid;justify-items:center;gap:.7em;text-align:center;padding:calc(var(--hw-space) * .5) 0}
+.gs-out .hw-ico{width:2em;height:2em;color:var(--hw-accent)}
+.gs-out p{margin:0;color:var(--hw-muted)}
+.ss-photo{display:block;width:calc(100% + var(--hw-space) * 3);max-width:none;aspect-ratio:16/7;object-fit:cover;margin:calc(var(--hw-space) * -1.5) calc(var(--hw-space) * -1.5) calc(var(--hw-space) * 1.2);border-radius:var(--hw-radius) var(--hw-radius) 0 0}
+.ss-top small{display:block;font-size:.78em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--hw-accent);margin-bottom:.3em}
+.ss-top h2{margin-bottom:.15em}
+.ss-top p{color:var(--hw-muted)}
+.ss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:calc(var(--hw-space) * .75);margin:calc(var(--hw-space) * 1.1) 0 0}
+.ss-grid div{padding:calc(var(--hw-space) * .85);border-radius:calc(var(--hw-radius) * .75);background:var(--hw-soft)}
+.ss-grid dt{font-size:.8em;color:var(--hw-muted)}
+.ss-grid dd{margin:.15em 0 0;font-weight:600;line-height:1.3}
+.ss-grid dd span{display:block;font-weight:400;font-size:.88em;color:var(--hw-muted)}
+.ss-out{margin-top:1em;background:none;border:0;padding:0;font:inherit;font-size:.9em;color:var(--hw-muted);text-decoration:underline;cursor:pointer}
+</style>
+<section class="hw [[card]]">
+  {#signed_in}
+  [[#show_photo]]{#stay_property_photo}<img class="ss-photo" src="{stay_property_photo}" alt="{stay_property_name}">{/stay_property_photo}[[/show_photo]]
+  {#sample_data}<div class="hw-sample">Sample data</div>{/sample_data}
+  <div class="ss-top"><small>{stay_countdown}</small><h2>{stay_property_name}</h2>[[#greeting]]{#stay_guest_name}<p>[[greeting]]</p>{/stay_guest_name}[[/greeting]]</div>
+  <dl class="ss-grid">
+    <div><dt>Check-in</dt><dd>{stay_arrival_formatted}{#stay_check_in}<span>from {stay_check_in_formatted}</span>{/stay_check_in}</dd></div>
+    <div><dt>Check-out</dt><dd>{stay_departure_formatted}{#stay_check_out}<span>by {stay_check_out_formatted}</span>{/stay_check_out}</dd></div>
+    {#stay_party_label}<div><dt>Guests</dt><dd>{stay_party_label}<span>{stay_nights_label}</span></dd></div>{/stay_party_label}
+    [[#show_code]]{#stay_code}<div><dt>Booking code</dt><dd>{stay_code}<span>{stay_platform}</span></dd></div>{/stay_code}[[/show_code]]
+  </dl>
+  [[#show_signout]]<button class="ss-out" type="button" data-hosp-signout>Sign out</button>[[/show_signout]]
+  {/signed_in}
+  {^signed_in}<div class="gs-out"><svg class="hw-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><p>[[signin_text]]</p>[[#signin_url]]<a class="hw-btn" href="[[signin_url]]" target="_top">[[signin_label]]</a>[[/signin_url]]</div>{/signed_in}
+</section>

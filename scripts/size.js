@@ -7,7 +7,7 @@ import { gzipSync } from 'node:zlib';
 import { minify } from 'terser';
 
 const dir = new URL('../widget/', import.meta.url);
-const FILES = ['widget.js', 'modules/templates.js', 'modules/analyze.js', 'modules/calendar.js', 'modules/reviews.js', 'modules/lightbox.js', 'modules/pager.js'];
+const FILES = ['widget.js', 'modules/templates.js', 'modules/analyze.js', 'modules/calendar.js', 'modules/reviews.js', 'modules/lightbox.js', 'modules/pager.js', 'modules/guest.js'];
 // Snippets from the builder name a starter template (templates.js) and say what
 // they need, so analyze.js is not part of these. Template files are extra (1–3 KB).
 const WIDGETS = {
@@ -15,6 +15,7 @@ const WIDGETS = {
   'Photo gallery': ['widget.js', 'modules/templates.js', 'modules/lightbox.js'],
   'Availability calendar': ['widget.js', 'modules/templates.js', 'modules/calendar.js', 'modules/pager.js'],
   'Reviews (carousel)': ['widget.js', 'modules/templates.js', 'modules/reviews.js', 'modules/pager.js'],
+  'For signed-in guests (embed page)': ['widget.js', 'modules/templates.js', 'modules/guest.js'],
 };
 
 const sizes = {};

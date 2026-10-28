@@ -4,7 +4,9 @@
 // widget only if it is copied explicitly below. Street address, coordinates,
 // Wi-Fi details, guest access, the house manual, iCal URLs, private review
 // feedback, guest last names, emails and billing details are never copied, so
-// no template can expose them.
+// no template can expose them. The one exception is stay(), which copies a
+// guest's own reservation and the property's arrival details for that guest
+// alone, after they have signed in (src/guest.js).
 
 import { amenities } from './amenities.js';
 
@@ -348,4 +350,110 @@ function guideItem(content) {
 export function host(raw) {
   const name = raw?.business && str(raw.company) ? str(raw.company) : str(raw?.name);
   return { host_name: name || 'Your host', host_picture: httpsUrl(raw?.profile_picture) };
+}
+
+const PLATFORM_NAMES = { airbnb: 'Airbnb', homeaway: 'Vrbo', vrbo: 'Vrbo', booking: 'Booking.com', direct: 'Direct booking', manual: 'Direct booking' };
+const HOUR = 3_600_000;
+
+/** "2026-10-26T15:00:00+08:00" → its date and time on the property's own clock. */
+function localParts(iso) {
+  const m = /^(\d{4}-\d{2}-\d{2})(?:T(\d{2}:\d{2}))?/.exec(String(iso || ''));
+  return m ? { date: m[1], time: m[2] || null } : null;
+}
+
+/** The UTC offset an ISO timestamp is written in, in ms ("Z" and none are 0). */
+function offsetOf(iso) {
+  const m = /([+-])(\d{2}):?(\d{2})$/.exec(String(iso || ''));
+  return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) * 60_000 : 0;
+}
+
+/** An instant written on the property's clock: "2026-10-25T15:00". */
+function onClock(ms, offset) {
+  return new Date(ms + offset).toISOString().slice(0, 16);
+}
+
+/** What the guest paid, line by line. The host's side of the financials is never copied. */
+function paymentLines(guest, currency) {
+  const g = guest || {};
+  const out = [];
+  const add = (item, kind) => {
+    const amount = money(item, currency);
+    if (amount == null || (amount === 0 && kind !== 'accommodation')) return;
+    out.push({ label: str(item.label) || words(kind), amount, kind });
+  };
+  if (g.accommodation) add(g.accommodation, 'accommodation');
+  for (const [list, kind] of [[g.fees, 'fee'], [g.discounts, 'discount'], [g.adjustments, 'adjustment'], [g.taxes, 'tax']]) {
+    for (const item of Array.isArray(list) ? list : []) if (item && typeof item === 'object') add(item, kind);
+  }
+  return out;
+}
+
+/** Hospitable's own word on whether a stay is on: accepted, and a guest's (not an owner's). */
+export function confirmed(raw) {
+  const category = raw?.reservation_status?.current?.category ?? raw?.status;
+  return category === 'accepted' && raw?.stay_type !== 'owner_stay';
+}
+
+/**
+ * A signed-in guest's own stay. `details` are the property's details
+ * (GET /properties/{id}), `guide` the Knowledge Hub topics guests may read.
+ * Arrival details (door code, check-in instructions, Wi-Fi) are only copied
+ * from `revealHours` before check-in until check-out.
+ */
+export function stay(raw, details, guide, now, revealHours) {
+  const p = (Array.isArray(raw.properties) && raw.properties[0]) || {};
+  const d = details || {};
+  const g = raw.guests || {};
+  const offset = offsetOf(raw.check_in);
+  const checkIn = Date.parse(raw.check_in);
+  const checkOut = Date.parse(raw.check_out);
+  const arrival = localParts(raw.arrival_date)?.date || localParts(raw.check_in)?.date || null;
+  const departure = localParts(raw.departure_date)?.date || localParts(raw.check_out)?.date || null;
+  const today = onClock(now, offset).slice(0, 10);
+  const from = checkIn - revealHours * HOUR;
+  const open = Number.isFinite(checkIn) && Number.isFinite(checkOut) && now >= from && now < checkOut;
+  let phase = null;
+  if (arrival && departure) phase = today < arrival ? 'upcoming' : today === arrival ? 'arrival' : today < departure ? 'staying' : today === departure ? 'departure' : 'over';
+  const coords = p.address?.coordinates || {};
+  const lat = numOrNull(coords.latitude);
+  const lng = numOrNull(coords.longitude);
+  const address = str(p.address?.display);
+  const currency = str(raw.financials?.currency) || str(p.currency) || 'USD';
+  const reveal = Number.isFinite(from) ? onClock(from, offset) : null;
+  return {
+    signed_in: true,
+    stay_guest_name: str(raw.guest?.first_name),
+    stay_code: str(raw.platform_id),
+    stay_platform: PLATFORM_NAMES[String(raw.platform || '').toLowerCase()] || words(raw.platform) || null,
+    stay_property_id: p.id ? String(p.id) : null,
+    stay_property_name: publicName(p),
+    stay_property_photo: httpsUrl(p.picture),
+    stay_arrival_date: arrival,
+    stay_departure_date: departure,
+    stay_nights: numOrNull(raw.nights),
+    stay_check_in: localParts(raw.check_in)?.time || hhmm(p['check-in']),
+    stay_check_out: localParts(raw.check_out)?.time || hhmm(p['check-out']),
+    stay_guests: numOrNull(g.total),
+    stay_adults: numOrNull(g.adult_count),
+    stay_children: numOrNull(g.child_count),
+    stay_infants: numOrNull(g.infant_count),
+    stay_pets: numOrNull(g.pet_count),
+    stay_phase: phase,
+    stay_days_to_arrival: arrival && today < arrival ? Math.round((Date.parse(arrival) - Date.parse(today)) / 86_400_000) : 0,
+    stay_access_open: open,
+    stay_access_ended: Number.isFinite(checkOut) && now >= checkOut,
+    stay_access_date: reveal && reveal.slice(0, 10),
+    stay_access_time: reveal && reveal.slice(11, 16),
+    stay_door_code: open ? str(raw.smartlock_code) : null,
+    stay_checkin_instructions: open ? str(d.guest_access) : null,
+    stay_wifi_name: open ? str(d.wifi_name) : null,
+    stay_wifi_password: open ? str(d.wifi_password) : null,
+    stay_address: address,
+    stay_map_url: lat != null && lng != null ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null,
+    stay_house_manual: str(d.house_manual),
+    stay_currency: currency,
+    stay_payment: paymentLines(raw.financials?.guest, currency),
+    stay_total: money(raw.financials?.guest?.total_price, currency),
+    stay_guide: Array.isArray(guide) ? guide : [],
+  };
 }
